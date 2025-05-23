@@ -1,0 +1,100 @@
+
+# 🚀 Projeto Mottu Challenge - IoT & Mobile
+
+Este repositório reúne duas partes principais do desafio:
+
+- 🐍 Backend em **Python** com **FastAPI** para detecção de motos.
+- 📱 Frontend **mobile** com **React Native + Expo**.
+
+---
+
+## 📦 Requisitos
+
+- Python 3.10 ou superior
+- Node.js 16 ou superior
+- npm (ou yarn)
+- Git
+- Android Studio (caso for emular no Android)
+- Expo Go App (para rodar no celular via QR Code)
+
+---
+
+## 🐍 Backend - API Python (FastAPI)
+
+### ▶️ Instruções para rodar a API
+
+
+1. **Crie o ambiente virtual**:
+   ```bash
+   python -m venv venv
+   ```
+
+
+2. **Instale as dependências**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Rode a API com Uvicorn**:
+   ```bash
+   python -m uvicorn detect_motos:app --host 0.0.0.0 --port 8000
+   ```
+
+4. **Acesse a documentação da API no navegador**:
+   ```
+   http://localhost:8000/docs
+   ```
+
+---
+
+## 📱 Mobile - App com React Native + Expo
+
+### ▶️ Instruções para rodar o app mobile
+
+1. **Entre na pasta do projeto mobile**:
+   ```bash
+   cd Mottu
+   ```
+
+2. **Instale as dependências do projeto**:
+   ```bash
+   npm install
+   ```
+
+3. **Inicie o servidor do Expo**:
+   ```bash
+   npx expo start
+   ```
+
+   Isso abrirá o Metro Bundler no navegador. Você pode:
+
+   - Escanear o QR Code com o app **Expo Go** no celular.
+   - Usar emulador com Android Studio.
+
+4. **(Opcional) Rodar no emulador Android diretamente**:
+   ```bash
+   npm run android
+   ```
+
+---
+
+## 📄 Atualizar `requirements.txt`
+
+Sempre que instalar novas bibliotecas Python, atualize o arquivo com:
+
+```bash
+pip freeze > requirements.txt
+```
+
+---
+
+## 🧠 Dicas importantes
+
+- Caso tenha problemas com o `uvicorn` não sendo reconhecido, verifique se o ambiente virtual está ativado corretamente.
+
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por Adel Mouhaidly RM557705, Afonso Correia Pereira RM, Tiago Ferro RM558485
