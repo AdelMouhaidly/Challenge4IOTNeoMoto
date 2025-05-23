@@ -3,6 +3,8 @@
 
 Este repositório reúne duas partes principais do desafio:
 
+NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da frota da Mottu, oferecendo rastreamento em tempo real das motos, visualização interativa da disposição física no pátio, interface intuitiva adaptada ao layout de cada filial e integração com dados de uso, manutenção e status dos veículos. Com foco em controle total, agilidade operacional e escalabilidade, a solução garante eficiência e precisão na operação logística da empresa.
+
 - 🐍 Backend em **Python** com **FastAPI** para detecção de motos.
 - 📱 Frontend **mobile** com **React Native + Expo**.
 
