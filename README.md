@@ -1,16 +1,19 @@
 
-# 🚀 Projeto Mottu Challenge - IoT & Mobile
+# Projeto Mottu Challenge -  Mobile
 
 Este repositório reúne duas partes principais do desafio:
 
-NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da frota da Mottu, oferecendo rastreamento em tempo real das motos, visualização interativa da disposição física no pátio, interface intuitiva adaptada ao layout de cada filial e integração com dados de uso, manutenção e status dos veículos. Com foco em controle total, agilidade operacional e escalabilidade, a solução garante eficiência e precisão na operação logística da empresa.
+NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da frota da Mottu. Ele oferece rastreamento em tempo real das motos, visualização interativa da disposição física dos veículos no pátio, interface intuitiva adaptada ao layout de cada filial e integração com dados de uso, manutenção e status operacional. O sistema foi projetado com foco em controle total das operações, agilidade no processo logístico e alta escalabilidade, garantindo eficiência, precisão e maior visibilidade das motos tanto para operadores quanto para gestores.
 
-- 🐍 Backend em **Python** com **FastAPI** para detecção de motos.
-- 📱 Frontend **mobile** com **React Native + Expo**.
+**Importante:** O backend em Python com FastAPI é utilizado apenas para a **página de detecção de motos (IoT)**. **Todas as outras funcionalidades do app mobile funcionam normalmente sem a API rodando**. Caso o backend não esteja ativo, apenas essa página específica não funcionará.
+
+
+- Backend em **Python** com **FastAPI** para detecção de motos.
+- Frontend **mobile** com **React Native + Expo**.
 
 ---
 
-## 📦 Requisitos
+##  Requisitos
 
 - Python 3.10 ou superior
 - Node.js 16 ou superior
@@ -21,9 +24,9 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ---
 
-## 🐍 Backend - API Python (FastAPI)
+##  Backend - API Python (FastAPI)
 
-### ▶️ Instruções para rodar a API
+### ▶ Instruções para rodar a API
 
 
 1. **Crie o ambiente virtual**:
@@ -78,15 +81,6 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
    npm run android
    ```
 
----
-
-## 📄 Atualizar `requirements.txt`
-
-Sempre que instalar novas bibliotecas Python, atualize o arquivo com:
-
-```bash
-pip freeze > requirements.txt
-```
 
 ---
 
