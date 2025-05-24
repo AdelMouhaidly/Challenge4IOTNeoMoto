@@ -87,6 +87,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 ##  Dicas importantes
 
 - Caso tenha problemas com o `uvicorn` não sendo reconhecido, verifique se o ambiente virtual está ativado corretamente.
+- Se a API de primeira que você envia a imagem para detectar a moto, tente mais de uma vez ao clicar em "Enviar imagem para API", que as vezes dá um bug.
 
 
 ---
