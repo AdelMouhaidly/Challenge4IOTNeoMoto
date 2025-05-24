@@ -94,4 +94,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ##  Autor
 
-Desenvolvido por Adel Mouhaidly RM557705, Afonso Correia Pereira RM, Tiago Ferro RM558485
+Desenvolvido por 
+- Adel Mouhaidly RM557705
+- Afonso Correia Pereira RM557863
+- Tiago Ferro RM558485
