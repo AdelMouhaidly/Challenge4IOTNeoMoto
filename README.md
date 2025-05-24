@@ -26,7 +26,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ##  Backend - API Python (FastAPI)
 
-### ▶ Instruções para rodar a API
+### Instruções para rodar a API
 
 
 1. **Crie o ambiente virtual**:
@@ -52,9 +52,9 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ---
 
-## 📱 Mobile - App com React Native + Expo
+##  Mobile - App com React Native + Expo
 
-### ▶️ Instruções para rodar o app mobile
+###  Instruções para rodar o app mobile
 
 1. **Entre na pasta do projeto mobile**:
    ```bash
@@ -84,13 +84,13 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ---
 
-## 🧠 Dicas importantes
+##  Dicas importantes
 
 - Caso tenha problemas com o `uvicorn` não sendo reconhecido, verifique se o ambiente virtual está ativado corretamente.
 
 
 ---
 
-## 👨‍💻 Autor
+##  Autor
 
 Desenvolvido por Adel Mouhaidly RM557705, Afonso Correia Pereira RM, Tiago Ferro RM558485
