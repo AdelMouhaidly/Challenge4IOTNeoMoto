@@ -23,10 +23,10 @@ const servicos = [
     image: require("../assets/cadastro.png"),
   },
   {
-    titulo: "Reserva de Motos",
-    descricao:
-      "Reserve a moto ideal para você de forma rápida e prática, escolhendo modelo, status e localização com filtros inteligentes.",
-    image: require("../assets/reserva.png"),
+  titulo: "Alerta de Motos",
+  descricao:
+    "Monitore e visualize rapidamente motos desaparecidas ou em manutenção. Acompanhe ocorrências e consulte localizações em tempo real.",
+  image: require("../assets/reserva.png"),
   },
   {
     titulo: "Detector de Motos",

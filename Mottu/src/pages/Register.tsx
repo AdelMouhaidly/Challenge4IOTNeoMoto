@@ -26,23 +26,23 @@ export default function Cadastro({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Crie sua conta</Text>
+      <Text style={styles.titulo}>Crie sua conta</Text>
 
-      <Text style={styles.label}>Nome</Text>
+      <Text style={styles.rotulo}>Nome</Text>
       <TextInput
         value={nome}
         onChangeText={setNome}
-        style={styles.input}
+        style={styles.entrada}
         placeholder="Digite seu nome"
         placeholderTextColor="#9BBF9B"
         autoCapitalize="words"
       />
 
-      <Text style={styles.label}>Email</Text>
+      <Text style={styles.rotulo}>Email</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        style={styles.entrada}
         placeholder="Digite seu e-mail"
         placeholderTextColor="#9BBF9B"
         keyboardType="email-address"
@@ -50,27 +50,27 @@ export default function Cadastro({ navigation }: any) {
         autoCorrect={false}
       />
 
-      <Text style={styles.label}>Senha</Text>
+      <Text style={styles.rotulo}>Senha</Text>
       <TextInput
         value={senha}
         onChangeText={setSenha}
         secureTextEntry={true}
-        style={styles.input}
+        style={styles.entrada}
         placeholder="Digite sua senha"
         placeholderTextColor="#9BBF9B"
         autoCapitalize="none"
         autoCorrect={false}
       />
 
-      <TouchableOpacity style={styles.button} onPress={cadastrar}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
+      <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
+        <Text style={styles.textoBotaoPrincipal}>Cadastrar</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
+        style={[styles.botaoPrincipal, styles.botaoSecundario]}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.secondaryButtonText}>Voltar para login</Text>
+        <Text style={styles.textoBotaoSecundario}>Voltar para login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -84,19 +84,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 40,
   },
-  title: {
+  titulo: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#228B22',
     marginBottom: 30,
     textAlign: 'center',
   },
-  label: {
+  rotulo: {
     fontSize: 18,
     color: '#228B22',
     marginBottom: 8,
   },
-  input: {
+  entrada: {
     borderWidth: 1,
     borderColor: '#A0D6A0',
     borderRadius: 10,
@@ -107,24 +107,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-  button: {
+  botaoPrincipal: {
     backgroundColor: '#28A745',
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 10,
   },
-  buttonText: {
+  textoBotaoPrincipal: {
     color: '#fff',
     fontWeight: '600',
     textAlign: 'center',
     fontSize: 18,
   },
-  secondaryButton: {
+  botaoSecundario: {
     backgroundColor: '#DFF6DD',
     borderWidth: 1,
     borderColor: '#28A745',
   },
-  secondaryButtonText: {
+  textoBotaoSecundario: {
     color: '#28A745',
     fontWeight: '600',
     textAlign: 'center',

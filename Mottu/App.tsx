@@ -16,11 +16,10 @@ import Home from './src/pages/Home';
 import Patio from './src/pages/PatioDashboard';
 import MottuLogo from './src/assets/mottu-branca.png';
 import MenuPersonalizado from './src/components/DrawerContent';
-import Reserva from './src/pages/Reserva';
-import Suporte from './src/pages/Suporte';
+import CadastroDeMotos from './src/pages/CadastroDeMotos';
 import Perfil from './src/pages/Perfil';
 import { StackLista, DrawerLista } from "./src/types/index";
-import DetalhesVeiculo from './src/pages/DetalhesVeiculo';
+import DashboardAlertas from './src/pages/DashboardAlertas';
 import DetectarMoto from './src/pages/DetectarMoto';
 
 const Stack = createNativeStackNavigator<StackLista>();
@@ -73,10 +72,9 @@ function RotasDrawer() {
     >
       <Drawer.Screen name="Home" component={Home} />
       <Drawer.Screen name="Patio" component={Patio} />
-      <Drawer.Screen name="Reserva" component={Reserva} />
-      <Drawer.Screen name="Moto" component={DetalhesVeiculo} />
+      <Drawer.Screen name="Cadastro" component={CadastroDeMotos} />
+      <Drawer.Screen name="Alertas" component={DashboardAlertas} />
       <Drawer.Screen name="DetectarMoto" component={DetectarMoto} />
-      <Drawer.Screen name="Suporte" component={Suporte} />
     </Drawer.Navigator>
   );
 }
@@ -88,8 +86,8 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="DrawerRoot" component={RotasDrawer} />
-        <Stack.Screen name="Reserva" component={Reserva} />
-        <Stack.Screen name="Moto" component={DetalhesVeiculo} />
+        <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
+        <Stack.Screen name="Alertas" component={DashboardAlertas} />
         <Stack.Screen name="Perfil" component={Perfil} />
       </Stack.Navigator>
     </NavigationContainer>
