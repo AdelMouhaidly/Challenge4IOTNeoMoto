@@ -10,7 +10,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - O backend em **Java Spring Boot** é utilizado para o **CRUD de motos e gestão de motoristas**.
 - O app mobile funciona normalmente mesmo sem as APIs rodando, com fallback para funcionamento offline.
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
 - **Backend Python** com **FastAPI** para detecção de motos (IA/IoT).
 - **Backend Java** com **Spring Boot** para CRUD de motos e motoristas.
@@ -135,7 +135,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ## Funcionalidades do App Mobile
 
-### 🏠 **Páginas Principais**
+###  **Páginas Principais**
 
 - **Home**: Página inicial com informações sobre a Mottu
 - **Pátio Dashboard**: Visualização em mapa das motos no pátio
@@ -145,13 +145,13 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - **Detecção de Motos**: IA para detectar motos em imagens (API Python)
 - **Perfil**: Gerenciamento de dados do usuário
 
-### 🔐 **Sistema de Autenticação**
+###  **Sistema de Autenticação**
 
 - Login e cadastro de usuários
 - Armazenamento local com AsyncStorage
 - Logout funcional
 
-### 🌙 **Sistema de Temas**
+###  **Sistema de Temas**
 
 - **Tema Dark/Light**: Alternância completa entre temas
 - **Persistência**: Tema salvo automaticamente no AsyncStorage
@@ -159,7 +159,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - **Menu Hambúrguer**: Totalmente adaptado ao tema ativo
 - **Transição Suave**: Mudança instantânea entre temas
 
-## 🌐 **APIs Integradas**
+##  **APIs Integradas**
 
 ### 1. **API Python (FastAPI)** - Detecção de Motos
 
@@ -189,7 +189,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - **Para o App Mobile**: O app funciona offline caso as APIs não estejam rodando.
 - **Detecção de Motos**: Se der erro na primeira tentativa, tente novamente.
 
-## 📁 **Estrutura de Pastas**
+## **Estrutura de Pastas**
 
 ```
 challenge-neomoto/
@@ -256,8 +256,10 @@ challenge-neomoto/
 
 ## Autor
 
-Desenvolvido por
+Desenvolvido por:
 
-- Adel Mouhaidly RM557705
-- Afonso Correia Pereira RM557863
-- Tiago Ferro RM558485
+- Adel Mouhaidly - [![GitHub](https://img.shields.io/badge/GitHub-Perfil-blue?style=for-the-badge&logo=github)](https://github.com/AdelMouhaidly)
+- Afonso Correia Pereira - [![GitHub](https://img.shields.io/badge/GitHub-Perfil-blue?style=for-the-badge&logo=github)](https://github.com/afonsocp)
+- Tiago Ferro - [![GitHub](https://img.shields.io/badge/GitHub-Perfil-blue?style=for-the-badge&logo=github)](https://github.com/Ferro333)
+
+
