@@ -1,13 +1,13 @@
-export type MotoStatus = 'parada' | 'em uso' | 'aguardando';
+export type MotoStatus = "parada" | "em uso" | "aguardando";
 
 export type Moto = {
   id: string;
   name: string;
   x: number;
   y: number;
-  status: MotoStatus; 
-  marca: string;      
-  configuracoes: string; 
+  status: MotoStatus;
+  marca: string;
+  configuracoes: string;
 };
 
 export type StackLista = {
@@ -27,5 +27,6 @@ export type DrawerLista = {
   Alertas: undefined;
   Perfil: undefined;
   DetectarMoto: undefined;
+  GestaoMotoristas: undefined;
   Historico: undefined;
 };

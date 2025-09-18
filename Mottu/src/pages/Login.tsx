@@ -11,12 +11,15 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
 export default function Login({ navigation }: NativeStackScreenProps<any>) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const { colors, toggleTheme, isDark } = useTheme();
 
   const realizarLogin = async () => {
     const usuarioArmazenado = await AsyncStorage.getItem("user");
@@ -33,48 +36,90 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Image
         source={require("../assets/Mottu.png")}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      <Text style={styles.titulo}>Bem-vindo de volta!</Text>
+      <Text style={[styles.titulo, { color: colors.primary }]}>
+        Bem-vindo de volta!
+      </Text>
 
-      <Text style={styles.etiqueta}>Email</Text>
+      <Text style={[styles.etiqueta, { color: colors.primary }]}>Email</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
-        style={styles.entrada}
+        style={[
+          styles.entrada,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         placeholder="Digite seu e-mail"
-        placeholderTextColor="#9BBF9B"
+        placeholderTextColor={colors.textSecondary}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
       />
 
-      <Text style={styles.etiqueta}>Senha</Text>
+      <Text style={[styles.etiqueta, { color: colors.primary }]}>Senha</Text>
       <TextInput
         value={senha}
         onChangeText={setSenha}
         secureTextEntry
         placeholder="Digite sua senha"
-        placeholderTextColor="#9BBF9B"
-        style={styles.entrada}
+        placeholderTextColor={colors.textSecondary}
+        style={[
+          styles.entrada,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         autoCapitalize="none"
         autoCorrect={false}
       />
 
-      <TouchableOpacity style={styles.botao} onPress={realizarLogin}>
+      <TouchableOpacity
+        style={[styles.botao, { backgroundColor: colors.success }]}
+        onPress={realizarLogin}
+      >
         <Text style={styles.textoBotao}>Entrar</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.botao, styles.botaoSecundario]}
+        style={[
+          styles.botao,
+          styles.botaoSecundario,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.success,
+          },
+        ]}
         onPress={() => navigation.navigate("Register")}
       >
-        <Text style={styles.textoBotaoSecundario}>Criar conta</Text>
+        <Text style={[styles.textoBotaoSecundario, { color: colors.success }]}>
+          Criar conta
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.botaoTema,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+        onPress={toggleTheme}
+      >
+        <Ionicons
+          name={isDark ? "sunny" : "moon"}
+          size={24}
+          color={colors.primary}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -83,7 +128,6 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4FDF4",
     justifyContent: "center",
     paddingHorizontal: 30,
     paddingVertical: 40,
@@ -97,28 +141,22 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#228B22",
     marginBottom: 30,
     textAlign: "center",
   },
   etiqueta: {
     fontSize: 18,
-    color: "#228B22",
     marginBottom: 8,
   },
   entrada: {
     borderWidth: 1,
-    borderColor: "#A0D6A0",
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 15,
     marginBottom: 20,
-    backgroundColor: "#fff",
     fontSize: 16,
-    color: "#000",
   },
   botao: {
-    backgroundColor: "#28A745",
     paddingVertical: 15,
     borderRadius: 10,
     marginTop: 10,
@@ -130,14 +168,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   botaoSecundario: {
-    backgroundColor: "#DFF6DD",
     borderWidth: 1,
-    borderColor: "#28A745",
   },
   textoBotaoSecundario: {
-    color: "#28A745",
     fontWeight: "600",
     textAlign: "center",
     fontSize: 18,
+  },
+  botaoTema: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
   },
 });

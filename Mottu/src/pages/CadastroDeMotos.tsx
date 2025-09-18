@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,14 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  ActivityIndicator,
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 
 export type MotoStatus = "parada" | "em uso" | "aguardando";
 
 export type Moto = {
-  id: string;
+  id: number;
   name: string;
   x: number;
   y: number;
@@ -22,100 +24,299 @@ export type Moto = {
   configuracoes: string;
 };
 
-export default function TelaCadastroMoto() {
+const API_BASE_URL = "http://10.0.2.2:8080/api";
+
+export default function CadastroDeMotos() {
   const [nome, setNome] = useState("");
   const [marca, setMarca] = useState("");
   const [configuracoes, setConfiguracoes] = useState("");
   const [motos, setMotos] = useState<Moto[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
+  const [modalEdicaoVisivel, setModalEdicaoVisivel] = useState(false);
+  const [motoEditando, setMotoEditando] = useState<Moto | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { colors } = useTheme();
 
-  const gerarId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  useEffect(() => {
+    carregarMotos();
+  }, []);
 
-  function cadastrarMoto() {
+  const carregarMotos = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/motos`);
+      if (response.ok) {
+        const data = await response.json();
+        setMotos(data);
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar as motos");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar motos:", error);
+      Alert.alert("Erro", "Erro de conexão com a API. Funcionando offline.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cadastrarMoto = async () => {
     if (!nome || !marca || !configuracoes) {
-      Alert.alert("Preencha todos os campos!");
+      Alert.alert("Erro", "Preencha todos os campos!");
       return;
     }
 
-    const novaMoto: Moto = {
-      id: gerarId(),
-      name: nome,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      status: "parada",
-      marca,
-      configuracoes,
-    };
+    setLoading(true);
+    try {
+      const novaMoto = {
+        name: nome,
+        marca,
+        configuracoes,
+        status: "parada",
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+      };
 
-    setMotos((prev) => [...prev, novaMoto]);
+      const response = await fetch(`${API_BASE_URL}/motos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(novaMoto),
+      });
+
+      if (response.ok) {
+        const motoSalva = await response.json();
+        setMotos((prev) => [...prev, motoSalva]);
+        setNome("");
+        setMarca("");
+        setConfiguracoes("");
+        Alert.alert("Sucesso", "Moto cadastrada com sucesso!");
+      } else {
+        const errorData = await response.text();
+        console.error("Erro da API:", errorData);
+        Alert.alert(
+          "Erro",
+          `Não foi possível cadastrar a moto: ${response.status}`
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao cadastrar moto:", error);
+      Alert.alert("Erro", "Erro de conexão com a API. Moto salva localmente.");
+
+      const motoLocal: Moto = {
+        id: Date.now(),
+        name: nome,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        status: "parada",
+        marca,
+        configuracoes,
+      };
+      setMotos((prev) => [...prev, motoLocal]);
+      setNome("");
+      setMarca("");
+      setConfiguracoes("");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const abrirModalEdicao = (moto: Moto) => {
+    setMotoEditando(moto);
+    setNome(moto.name);
+    setMarca(moto.marca);
+    setConfiguracoes(moto.configuracoes);
+    setModalEdicaoVisivel(true);
+  };
+
+  const limparFormulario = () => {
     setNome("");
     setMarca("");
     setConfiguracoes("");
-    Alert.alert("Moto cadastrada com sucesso!");
-  }
+    setMotoEditando(null);
+  };
 
-  function excluirMoto(id: string) {
+  const salvarEdicaoMoto = async () => {
+    if (!nome || !marca || !configuracoes || !motoEditando) {
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const motoAtualizada = {
+        name: nome,
+        marca,
+        configuracoes,
+        status: motoEditando.status,
+        x: motoEditando.x,
+        y: motoEditando.y,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/motos/${motoEditando.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(motoAtualizada),
+      });
+
+      if (response.ok) {
+        const motoSalva = await response.json();
+        setMotos((prev) =>
+          prev.map((moto) => (moto.id === motoEditando.id ? motoSalva : moto))
+        );
+        setModalEdicaoVisivel(false);
+        limparFormulario();
+        Alert.alert("Sucesso", "Moto atualizada com sucesso!");
+      } else {
+        const errorData = await response.text();
+        console.error("Erro da API:", errorData);
+        Alert.alert(
+          "Erro",
+          `Não foi possível atualizar a moto: ${response.status}`
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar moto:", error);
+      Alert.alert("Erro", "Erro de conexão com a API. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const excluirMoto = async (id: number) => {
     Alert.alert("Excluir", "Deseja excluir essa moto?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Excluir",
         style: "destructive",
-        onPress: () =>
-          setMotos((prev) => prev.filter((moto) => moto.id !== id)),
+        onPress: async () => {
+          setLoading(true);
+          try {
+            const response = await fetch(`${API_BASE_URL}/motos/${id}`, {
+              method: "DELETE",
+            });
+
+            if (response.ok) {
+              setMotos((prev) => prev.filter((moto) => moto.id !== id));
+              Alert.alert("Sucesso", "Moto excluída com sucesso!");
+            } else {
+              Alert.alert("Erro", "Não foi possível excluir a moto");
+            }
+          } catch (error) {
+            console.error("Erro ao excluir moto:", error);
+            Alert.alert(
+              "Erro",
+              "Erro de conexão com a API. Excluída localmente."
+            );
+            setMotos((prev) => prev.filter((moto) => moto.id !== id));
+          } finally {
+            setLoading(false);
+          }
+        },
       },
     ]);
-  }
+  };
 
   function renderizarMoto({ item }: { item: Moto }) {
     return (
-      <View style={styles.cartao}>
+      <View style={[styles.cartao, { backgroundColor: colors.surface }]}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.tituloCartao}>{item.name}</Text>
-          <Text style={styles.descricaoCartao}>
+          <Text style={[styles.tituloCartao, { color: colors.primary }]}>
+            {item.name}
+          </Text>
+          <Text style={[styles.descricaoCartao, { color: colors.text }]}>
             Marca: {item.marca} | Status: {item.status}
           </Text>
-          <Text style={styles.descricaoCartao}>
+          <Text style={[styles.descricaoCartao, { color: colors.text }]}>
             Configurações: {item.configuracoes}
           </Text>
-          <Text style={styles.descricaoCartao}>
+          <Text style={[styles.descricaoCartao, { color: colors.text }]}>
             Coordenadas: x={item.x.toFixed(1)} / y={item.y.toFixed(1)}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.botaoExcluir}
-          onPress={() => excluirMoto(item.id)}
-        >
-          <Text style={styles.textoBotaoExcluir}>Excluir</Text>
-        </TouchableOpacity>
+        <View style={styles.botoesAcao}>
+          <TouchableOpacity
+            style={styles.botaoEditar}
+            onPress={() => abrirModalEdicao(item)}
+            disabled={loading}
+          >
+            <Text style={styles.textoBotaoAcao}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.botaoExcluir}
+            onPress={() => excluirMoto(item.id)}
+            disabled={loading}
+          >
+            <Text style={styles.textoBotaoExcluir}>
+              {loading ? "..." : "Excluir"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Cadastro de Moto</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.titulo, { color: colors.primary }]}>
+        Cadastro de Moto
+      </Text>
 
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         placeholder="Nome da moto"
+        placeholderTextColor={colors.textSecondary}
         value={nome}
         onChangeText={setNome}
       />
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         placeholder="Marca"
+        placeholderTextColor={colors.textSecondary}
         value={marca}
         onChangeText={setMarca}
       />
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+        ]}
         placeholder="Configurações"
+        placeholderTextColor={colors.textSecondary}
         value={configuracoes}
         onChangeText={setConfiguracoes}
       />
 
-      <TouchableOpacity style={styles.botao} onPress={cadastrarMoto}>
-        <Text style={styles.textoBotao}>Cadastrar Moto</Text>
+      <TouchableOpacity
+        style={[styles.botao, { backgroundColor: colors.success }]}
+        onPress={cadastrarMoto}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.textoBotao}>Cadastrar Moto</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -140,24 +341,131 @@ export default function TelaCadastroMoto() {
         animationType="slide"
         onRequestClose={() => setModalVisivel(false)}
       >
-        <View style={styles.containerModal}>
-          <Text style={styles.tituloModal}>Histórico de Motos Cadastradas</Text>
-          {motos.length === 0 ? (
-            <Text style={styles.nenhumaReserva}>Nenhuma moto cadastrada.</Text>
+        <View
+          style={[
+            styles.containerModal,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.tituloModal, { color: colors.primary }]}>
+            Histórico de Motos Cadastradas
+          </Text>
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#228B22"
+              style={{ marginTop: 20 }}
+            />
+          ) : motos.length === 0 ? (
+            <Text
+              style={[styles.nenhumaReserva, { color: colors.textSecondary }]}
+            >
+              Nenhuma moto cadastrada.
+            </Text>
           ) : (
             <FlatList
               data={motos}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.id.toString()}
               renderItem={renderizarMoto}
               ItemSeparatorComponent={() => <View style={styles.separador} />}
             />
           )}
           <TouchableOpacity
-            style={[styles.botao, { marginTop: 20 }]}
+            style={[
+              styles.botao,
+              { backgroundColor: colors.success, marginTop: 20 },
+            ]}
             onPress={() => setModalVisivel(false)}
           >
             <Text style={styles.textoBotao}>Fechar</Text>
           </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={modalEdicaoVisivel}
+        animationType="slide"
+        onRequestClose={() => {
+          setModalEdicaoVisivel(false);
+          limparFormulario();
+        }}
+      >
+        <View
+          style={[
+            styles.containerModal,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.tituloModal, { color: colors.primary }]}>
+            Editar Moto
+          </Text>
+
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+            placeholder="Nome da moto"
+            placeholderTextColor={colors.textSecondary}
+            value={nome}
+            onChangeText={setNome}
+          />
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+            placeholder="Marca"
+            placeholderTextColor={colors.textSecondary}
+            value={marca}
+            onChangeText={setMarca}
+          />
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+            placeholder="Configurações"
+            placeholderTextColor={colors.textSecondary}
+            value={configuracoes}
+            onChangeText={setConfiguracoes}
+          />
+
+          <View style={styles.botoesModal}>
+            <TouchableOpacity
+              style={[styles.botao, { flex: 1, marginRight: 10 }]}
+              onPress={salvarEdicaoMoto}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.textoBotao}>Atualizar Moto</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.botao, { flex: 1, backgroundColor: "#666" }]}
+              onPress={() => {
+                setModalEdicaoVisivel(false);
+                limparFormulario();
+              }}
+            >
+              <Text style={styles.textoBotao}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
@@ -167,27 +475,22 @@ export default function TelaCadastroMoto() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4FDF4",
     padding: 20,
   },
   titulo: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#228B22",
     textAlign: "center",
     marginBottom: 20,
   },
   input: {
-    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 14,
     marginBottom: 10,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
   },
   botao: {
-    backgroundColor: "#228B22",
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: "center",
@@ -199,23 +502,19 @@ const styles = StyleSheet.create({
   },
   containerModal: {
     flex: 1,
-    backgroundColor: "#F4FDF4",
     padding: 20,
   },
   tituloModal: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#228B22",
     textAlign: "center",
     marginBottom: 20,
   },
   nenhumaReserva: {
     textAlign: "center",
     fontSize: 16,
-    color: "#666",
   },
   cartao: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
@@ -229,12 +528,10 @@ const styles = StyleSheet.create({
   tituloCartao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#228B22",
     marginBottom: 4,
   },
   descricaoCartao: {
     fontSize: 14,
-    color: "#333",
   },
   botaoExcluir: {
     backgroundColor: "#FF4C4C",
@@ -250,5 +547,25 @@ const styles = StyleSheet.create({
   },
   separador: {
     height: 10,
+  },
+  botoesAcao: {
+    flexDirection: "column",
+  },
+  botaoEditar: {
+    backgroundColor: "#007BFF",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 5,
+  },
+  textoBotaoAcao: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
+    textAlign: "center",
+  },
+  botoesModal: {
+    flexDirection: "row",
+    marginTop: 20,
   },
 });

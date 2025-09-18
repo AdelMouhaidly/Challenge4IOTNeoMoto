@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   View,
   Image,
@@ -7,8 +7,8 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 
 export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -16,8 +16,8 @@ export default function DetectarMoto() {
 
   const selecionarImagem = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Permita acesso à galeria.');
+    if (status !== "granted") {
+      Alert.alert("Permissão necessária", "Permita acesso à galeria.");
       return;
     }
 
@@ -36,23 +36,22 @@ export default function DetectarMoto() {
 
   const enviarImagem = async () => {
     if (!imageUri) {
-      Alert.alert('Erro', 'Por favor, selecione uma imagem antes de enviar.');
+      Alert.alert("Erro", "Por favor, selecione uma imagem antes de enviar.");
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', {
+    formData.append("file", {
       uri: imageUri,
-      name: 'foto.jpg',
-      type: 'image/jpeg',
+      name: "foto.jpg",
+      type: "image/jpeg",
     } as any);
 
     try {
-      const response = await fetch('http://192.168.15.7:8000/detectar-moto', {
-        // Altere o ip com base no ip local
-        method: 'POST',
+      const response = await fetch("http://192.168.15.7:8000/detectar-moto", {
+        method: "POST",
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         body: formData,
       });
@@ -60,8 +59,8 @@ export default function DetectarMoto() {
       const data = await response.json();
       setResultado(data);
     } catch (error) {
-      console.error('Erro ao enviar imagem:', error);
-      Alert.alert('Erro', 'Não foi possível conectar à API.');
+      console.error("Erro ao enviar imagem:", error);
+      Alert.alert("Erro", "Não foi possível conectar à API.");
     }
   };
 
@@ -88,9 +87,15 @@ export default function DetectarMoto() {
           <Text style={styles.resultadoTitulo}>Resultado da Detecção:</Text>
 
           {resultado.motos_detectadas.length > 0 ? (
-            <Text style={styles.mensagemSucesso}> Moto detectada na imagem!</Text>
+            <Text style={styles.mensagemSucesso}>
+              {" "}
+              Moto detectada na imagem!
+            </Text>
           ) : (
-            <Text style={styles.mensagemErro}> Nenhuma moto detectada na imagem.</Text>
+            <Text style={styles.mensagemErro}>
+              {" "}
+              Nenhuma moto detectada na imagem.
+            </Text>
           )}
 
           <Text style={styles.resultadoTexto}>
@@ -105,27 +110,27 @@ export default function DetectarMoto() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    alignItems: "center",
+    backgroundColor: "#fff",
     flexGrow: 1,
   },
   titulo: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#228B22',
+    fontWeight: "bold",
+    color: "#228B22",
     marginBottom: 20,
   },
   botao: {
-    backgroundColor: '#228B22',
+    backgroundColor: "#228B22",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 10,
     marginTop: 10,
   },
   textoBotao: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   image: {
     width: 320,
@@ -133,37 +138,37 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   resultadoContainer: {
     marginTop: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: "#f8f8f8",
     padding: 15,
     borderRadius: 10,
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   resultadoTitulo: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   resultadoTexto: {
-    fontFamily: 'monospace',
-    color: '#555',
+    fontFamily: "monospace",
+    color: "#555",
     fontSize: 14,
   },
   mensagemSucesso: {
-    color: '#228B22',
-    fontWeight: 'bold',
+    color: "#228B22",
+    fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
   },
   mensagemErro: {
-    color: '#B22222',
-    fontWeight: 'bold',
+    color: "#B22222",
+    fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
   },

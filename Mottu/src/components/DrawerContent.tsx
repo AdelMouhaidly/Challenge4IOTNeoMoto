@@ -1,65 +1,117 @@
-import { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect, useState } from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
+import {
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem,
+} from "@react-navigation/drawer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackLista } from "../types/index";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function MenuPersonalizado(props: any) {
-  const [dadosUsuario, setDadosUsuario] = useState({ nome: '', email: '' });
+  const [dadosUsuario, setDadosUsuario] = useState({ nome: "", email: "" });
+  const { colors, toggleTheme, isDark } = useTheme();
 
   const navegacao = useNavigation<NativeStackNavigationProp<StackLista>>();
 
-  const carregarUsuario = async () => {
+  const carregarDadosUsuario = async () => {
     try {
-      const usuarioArmazenado = await AsyncStorage.getItem('user');
+      const usuarioArmazenado = await AsyncStorage.getItem("user");
       if (usuarioArmazenado) {
         const usuario = JSON.parse(usuarioArmazenado);
         setDadosUsuario({
-          nome: usuario.name ?? '',
-          email: usuario.email ?? '',
+          nome: usuario.name ?? "",
+          email: usuario.email ?? "",
         });
       }
     } catch (erro) {
-      console.log('Erro ao carregar usuário:', erro);
+      console.log("Erro ao carregar usuário:", erro);
     }
   };
 
   useEffect(() => {
-    carregarUsuario();
+    carregarDadosUsuario();
   }, []);
 
-  const sair = () => {
+  const realizarLogout = () => {
     navegacao.reset({
       index: 0,
-      routes: [{ name: 'Login' }],
+      routes: [{ name: "Login" }],
     });
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <Image
-          source={require('../assets/avatar.jpg')}
-          style={styles.avatar}
-        />
-        <Text style={styles.name}>{dadosUsuario.nome}</Text>
-        <Text style={styles.email}>{dadosUsuario.email}</Text>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={[styles.cabecalho, { backgroundColor: colors.header }]}>
+        <Image source={require("../assets/avatar.jpg")} style={styles.avatar} />
+        <Text
+          style={[
+            styles.nomeUsuario,
+            { color: isDark ? "#FFFFFF" : "#FFFFFF" },
+          ]}
+        >
+          {dadosUsuario.nome}
+        </Text>
+        <Text
+          style={[
+            styles.emailUsuario,
+            { color: isDark ? "#CCCCCC" : "#F0F0F0" },
+          ]}
+        >
+          {dadosUsuario.email}
+        </Text>
       </View>
 
-      <DrawerContentScrollView {...props} contentContainerStyle={{ flexGrow: 1 }}>
+      <DrawerContentScrollView
+        {...props}
+        contentContainerStyle={{ flexGrow: 1 }}
+        style={{ backgroundColor: colors.background }}
+      >
+        <View
+          style={[styles.cabecalhoSecao, { backgroundColor: colors.surface }]}
+        >
+          <Text style={[styles.tituloSecao, { color: colors.textSecondary }]}>
+            PAINEL PRINCIPAL
+          </Text>
+        </View>
         <DrawerItemList {...props} />
+
+        <View
+          style={[styles.divisorSecao, { backgroundColor: colors.border }]}
+        />
+
+        <DrawerItem
+          label={`Tema ${isDark ? "Claro" : "Escuro"}`}
+          onPress={toggleTheme}
+          inactiveTintColor={colors.text}
+          activeTintColor={colors.primary}
+          style={[styles.botaoTema, { backgroundColor: colors.surface }]}
+          labelStyle={{ color: colors.text }}
+          icon={() => (
+            <Ionicons
+              name={isDark ? "sunny" : "moon"}
+              size={22}
+              color={colors.primary}
+            />
+          )}
+        />
 
         <View style={{ flex: 1 }} />
 
         <DrawerItem
-          label="Sair"
-          onPress={sair}
-          inactiveTintColor="#d32f2f"
-          style={styles.logoutButton}
-          icon={() => <Ionicons name="log-out-outline" size={22} color="#d32f2f" />}
+          label="Sair do Sistema"
+          onPress={realizarLogout}
+          inactiveTintColor={colors.error}
+          activeTintColor={colors.error}
+          style={[styles.botaoSair, { borderTopColor: colors.border }]}
+          labelStyle={{ color: colors.error }}
+          icon={() => (
+            <Ionicons name="log-out-outline" size={22} color={colors.error} />
+          )}
         />
       </DrawerContentScrollView>
     </View>
@@ -67,11 +119,10 @@ export default function MenuPersonalizado(props: any) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: '#228B22',
+  cabecalho: {
     paddingVertical: 30,
     paddingHorizontal: 20,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   avatar: {
     width: 50,
@@ -79,18 +130,35 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 10,
   },
-  name: {
+  nomeUsuario: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
   },
-  email: {
+  emailUsuario: {
     fontSize: 14,
-    color: '#f0f0f0',
   },
-  logoutButton: {
+  botaoSair: {
     borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    marginTop: 'auto',
+    marginTop: "auto",
+  },
+  botaoTema: {
+    marginVertical: 8,
+    marginHorizontal: 8,
+    borderRadius: 8,
+  },
+  cabecalhoSecao: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 8,
+  },
+  tituloSecao: {
+    fontSize: 12,
+    fontWeight: "bold",
+    letterSpacing: 1,
+  },
+  divisorSecao: {
+    height: 1,
+    marginVertical: 8,
+    marginHorizontal: 16,
   },
 });
