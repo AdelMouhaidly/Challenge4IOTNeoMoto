@@ -26,6 +26,8 @@ export type Motorista = {
     id: number;
     name: string;
     marca: string;
+    configuracoes?: string;
+    status?: string;
   };
 };
 
@@ -64,6 +66,14 @@ export default function GestaoMotoristas() {
   useEffect(() => {
     carregarMotoristas();
     carregarMotos();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      carregarMotos();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const carregarMotoristas = async () => {
@@ -110,6 +120,7 @@ export default function GestaoMotoristas() {
 
   const abrirModalCadastro = () => {
     limparFormulario();
+    carregarMotos();
     setModalCadastroVisivel(true);
   };
 
@@ -134,6 +145,22 @@ export default function GestaoMotoristas() {
 
     setLoading(true);
     try {
+      let motoCompleta = null;
+      if (motoSelecionada) {
+        const motoEncontrada = motos.find(
+          (moto) => moto.id === motoSelecionada
+        );
+        if (motoEncontrada) {
+          motoCompleta = {
+            id: motoEncontrada.id,
+            name: motoEncontrada.name,
+            marca: motoEncontrada.marca,
+            configuracoes: motoEncontrada.configuracoes,
+            status: motoEncontrada.status,
+          };
+        }
+      }
+
       const motoristaData = {
         nome,
         cpf,
@@ -142,6 +169,7 @@ export default function GestaoMotoristas() {
         cnh,
         endereco,
         status,
+        moto: motoCompleta,
       };
 
       let response;
@@ -167,17 +195,6 @@ export default function GestaoMotoristas() {
       }
 
       if (response.ok) {
-        const motoristaSalvo = await response.json();
-
-        if (motoSelecionada) {
-          await fetch(
-            `${API_BASE_URL}/motoristas/${motoristaSalvo.id}/moto/${motoSelecionada}`,
-            {
-              method: "POST",
-            }
-          );
-        }
-
         Alert.alert(
           "Sucesso",
           motoristaEditando ? "Motorista atualizado!" : "Motorista cadastrado!"
@@ -213,7 +230,7 @@ export default function GestaoMotoristas() {
               });
 
               if (response.ok) {
-                Alert.alert("Sucesso", "Motorista excluído!");
+                Alert.alert("Sucesso", "Motorista excluído com sucesso!");
                 carregarMotoristas();
               } else {
                 Alert.alert("Erro", "Não foi possível excluir o motorista");
@@ -231,28 +248,39 @@ export default function GestaoMotoristas() {
   };
 
   const renderizarMotorista = ({ item }: { item: Motorista }) => (
-    <View style={styles.cartao}>
+    <View style={[styles.cartao, { backgroundColor: colors.surface }]}>
       <View style={{ flex: 1 }}>
-        <Text style={styles.tituloCartao}>{item.nome}</Text>
-        <Text style={styles.descricaoCartao}>CPF: {item.cpf}</Text>
-        <Text style={styles.descricaoCartao}>Email: {item.email}</Text>
-        <Text style={styles.descricaoCartao}>CNH: {item.cnh}</Text>
-        <Text style={styles.descricaoCartao}>Status: {item.status}</Text>
+        <Text style={[styles.tituloCartao, { color: colors.primary }]}>
+          {item.nome}
+        </Text>
+        <Text style={[styles.descricaoCartao, { color: colors.text }]}>
+          CPF: {item.cpf}
+        </Text>
+        <Text style={[styles.descricaoCartao, { color: colors.text }]}>
+          Email: {item.email}
+        </Text>
+        <Text style={[styles.descricaoCartao, { color: colors.text }]}>
+          CNH: {item.cnh}
+        </Text>
+        <Text style={[styles.descricaoCartao, { color: colors.text }]}>
+          Status: {item.status}
+        </Text>
         {item.moto && (
-          <Text style={styles.descricaoCartao}>
+          <Text style={[styles.descricaoCartao, { color: colors.text }]}>
             Moto: {item.moto.name} ({item.moto.marca})
+            {item.moto.status && ` - Status: ${item.moto.status}`}
           </Text>
         )}
       </View>
       <View style={styles.botoesAcao}>
         <TouchableOpacity
-          style={styles.botaoEditar}
+          style={[styles.botaoEditar, { backgroundColor: colors.primary }]}
           onPress={() => abrirModalEdicao(item)}
         >
           <Text style={styles.textoBotaoAcao}>Editar</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.botaoExcluir}
+          style={[styles.botaoExcluir, { backgroundColor: colors.error }]}
           onPress={() => excluirMotorista(item.id)}
         >
           <Text style={styles.textoBotaoAcao}>Excluir</Text>
@@ -268,7 +296,7 @@ export default function GestaoMotoristas() {
       </Text>
 
       <TouchableOpacity
-        style={styles.botaoCadastrar}
+        style={[styles.botaoCadastrar, { backgroundColor: colors.success }]}
         onPress={abrirModalCadastro}
       >
         <Text style={styles.textoBotaoCadastrar}>Cadastrar Novo Motorista</Text>
@@ -277,11 +305,15 @@ export default function GestaoMotoristas() {
       <TouchableOpacity
         style={[
           styles.botaoCadastrar,
-          { backgroundColor: "#fff", borderWidth: 2, borderColor: "#228B22" },
+          {
+            backgroundColor: colors.surface,
+            borderWidth: 2,
+            borderColor: colors.success,
+          },
         ]}
         onPress={() => setModalVisivel(true)}
       >
-        <Text style={[styles.textoBotaoCadastrar, { color: "#228B22" }]}>
+        <Text style={[styles.textoBotaoCadastrar, { color: colors.success }]}>
           Ver Todos os Motoristas
         </Text>
       </TouchableOpacity>
@@ -291,13 +323,20 @@ export default function GestaoMotoristas() {
         animationType="slide"
         onRequestClose={() => setModalVisivel(false)}
       >
-        <View style={styles.containerModal}>
-          <Text style={styles.tituloModal}>Motoristas Cadastrados</Text>
+        <View
+          style={[
+            styles.containerModal,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.tituloModal, { color: colors.primary }]}>
+            Motoristas Cadastrados
+          </Text>
 
           {loading ? (
             <ActivityIndicator
               size="large"
-              color="#228B22"
+              color={colors.primary}
               style={{ marginTop: 20 }}
             />
           ) : (
@@ -307,7 +346,9 @@ export default function GestaoMotoristas() {
               renderItem={renderizarMotorista}
               ItemSeparatorComponent={() => <View style={styles.separador} />}
               ListEmptyComponent={
-                <Text style={styles.nenhumItem}>
+                <Text
+                  style={[styles.nenhumItem, { color: colors.textSecondary }]}
+                >
                   Nenhum motorista cadastrado.
                 </Text>
               }
@@ -315,7 +356,10 @@ export default function GestaoMotoristas() {
           )}
 
           <TouchableOpacity
-            style={[styles.botaoCadastrar, { marginTop: 20 }]}
+            style={[
+              styles.botaoCadastrar,
+              { marginTop: 20, backgroundColor: colors.success },
+            ]}
             onPress={() => setModalVisivel(false)}
           >
             <Text style={styles.textoBotaoCadastrar}>Fechar</Text>
@@ -328,21 +372,42 @@ export default function GestaoMotoristas() {
         animationType="slide"
         onRequestClose={() => setModalCadastroVisivel(false)}
       >
-        <View style={styles.containerModal}>
-          <Text style={styles.tituloModal}>
+        <View
+          style={[
+            styles.containerModal,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.tituloModal, { color: colors.primary }]}>
             {motoristaEditando ? "Editar Motorista" : "Cadastrar Motorista"}
           </Text>
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="Nome completo"
+            placeholderTextColor={colors.textSecondary}
             value={nome}
             onChangeText={setNome}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="CPF"
+            placeholderTextColor={colors.textSecondary}
             value={cpf}
             onChangeText={setCpf}
             keyboardType="numeric"
@@ -350,16 +415,32 @@ export default function GestaoMotoristas() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="Telefone"
+            placeholderTextColor={colors.textSecondary}
             value={telefone}
             onChangeText={setTelefone}
             keyboardType="phone-pad"
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="Email"
+            placeholderTextColor={colors.textSecondary}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -367,26 +448,47 @@ export default function GestaoMotoristas() {
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="CNH"
+            placeholderTextColor={colors.textSecondary}
             value={cnh}
             onChangeText={setCnh}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
             placeholder="Endereço"
+            placeholderTextColor={colors.textSecondary}
             value={endereco}
             onChangeText={setEndereco}
             multiline
           />
 
-          <Text style={styles.label}>Status:</Text>
-          <View style={styles.pickerContainer}>
+          <Text style={[styles.label, { color: colors.primary }]}>Status:</Text>
+          <View
+            style={[
+              styles.pickerContainer,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             <Picker
               selectedValue={status}
               onValueChange={setStatus}
-              style={styles.picker}
+              style={[styles.picker, { color: colors.text }]}
             >
               <Picker.Item label="Ativo" value="ativo" />
               <Picker.Item label="Inativo" value="inativo" />
@@ -394,14 +496,30 @@ export default function GestaoMotoristas() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>Moto (opcional):</Text>
-          <View style={styles.pickerContainer}>
+          <Text style={[styles.label, { color: colors.primary }]}>
+            Moto (opcional):
+          </Text>
+          <View
+            style={[
+              styles.pickerContainer,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
             <Picker
               selectedValue={motoSelecionada}
               onValueChange={setMotoSelecionada}
-              style={styles.picker}
+              style={[styles.picker, { color: colors.text }]}
             >
               <Picker.Item label="Nenhuma moto selecionada" value={null} />
+              {motoristaEditando &&
+                motoristaEditando.moto &&
+                !motos.find((m) => m.id === motoristaEditando.moto?.id) && (
+                  <Picker.Item
+                    key={`current-${motoristaEditando.moto.id}`}
+                    label={`${motoristaEditando.moto.name} (${motoristaEditando.moto.marca}) - [EXCLUÍDA]`}
+                    value={motoristaEditando.moto.id}
+                  />
+                )}
               {motos.map((moto) => (
                 <Picker.Item
                   key={moto.id}
@@ -414,7 +532,10 @@ export default function GestaoMotoristas() {
 
           <View style={styles.botoesModal}>
             <TouchableOpacity
-              style={[styles.botaoCadastrar, { flex: 1, marginRight: 10 }]}
+              style={[
+                styles.botaoCadastrar,
+                { flex: 1, marginRight: 10, backgroundColor: colors.success },
+              ]}
               onPress={salvarMotorista}
               disabled={loading}
             >
@@ -430,7 +551,7 @@ export default function GestaoMotoristas() {
             <TouchableOpacity
               style={[
                 styles.botaoCadastrar,
-                { flex: 1, backgroundColor: "#666" },
+                { flex: 1, backgroundColor: colors.textSecondary },
               ]}
               onPress={() => {
                 setModalCadastroVisivel(false);
@@ -449,18 +570,15 @@ export default function GestaoMotoristas() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4FDF4",
     padding: 20,
   },
   titulo: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#228B22",
     textAlign: "center",
     marginBottom: 20,
   },
   botaoCadastrar: {
-    backgroundColor: "#228B22",
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: "center",
@@ -473,44 +591,36 @@ const styles = StyleSheet.create({
   },
   containerModal: {
     flex: 1,
-    backgroundColor: "#F4FDF4",
     padding: 20,
   },
   tituloModal: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#228B22",
     textAlign: "center",
     marginBottom: 20,
   },
   input: {
-    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 14,
     marginBottom: 10,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
   },
   label: {
     fontSize: 16,
-    color: "#228B22",
     fontWeight: "bold",
     marginBottom: 5,
     marginTop: 10,
   },
   pickerContainer: {
-    backgroundColor: "#fff",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#ccc",
     marginBottom: 10,
   },
   picker: {
     height: 50,
   },
   cartao: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
@@ -524,26 +634,22 @@ const styles = StyleSheet.create({
   tituloCartao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#228B22",
     marginBottom: 4,
   },
   descricaoCartao: {
     fontSize: 14,
-    color: "#333",
     marginBottom: 2,
   },
   botoesAcao: {
     flexDirection: "column",
   },
   botaoEditar: {
-    backgroundColor: "#007BFF",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     marginBottom: 5,
   },
   botaoExcluir: {
-    backgroundColor: "#FF4C4C",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -564,7 +670,6 @@ const styles = StyleSheet.create({
   nenhumItem: {
     textAlign: "center",
     fontSize: 16,
-    color: "#666",
     marginTop: 20,
   },
 });

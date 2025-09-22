@@ -10,6 +10,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { Moto, MotoStatus } from "../types/index";
+import { useTheme } from "../contexts/ThemeContext";
 
 const LARGURA_PATIO = Dimensions.get("window").width - 40;
 const ALTURA_PATIO = 400;
@@ -38,7 +39,8 @@ function gerarMotos(quantidade: number): Moto[] {
       name: `Moto ${i}`,
       x: Math.random(),
       y: Math.random(),
-      status: statusPossiveis[Math.floor(Math.random() * statusPossiveis.length)],
+      status:
+        statusPossiveis[Math.floor(Math.random() * statusPossiveis.length)],
       marca: marcas[Math.floor(Math.random() * marcas.length)],
       configuracoes:
         configuracoes[Math.floor(Math.random() * configuracoes.length)],
@@ -52,6 +54,7 @@ export default function PatioDashboard() {
   const [motos, setMotos] = useState<Moto[]>(gerarMotos(15));
   const [motoSelecionada, setMotoSelecionada] = useState<Moto | null>(null);
   const [mostrarModalDetalhes, setMostrarModalDetalhes] = useState(false);
+  const { colors } = useTheme();
 
   function corDoMarcador(status: MotoStatus) {
     if (status === "em uso") return "#f39c12";
@@ -69,8 +72,10 @@ export default function PatioDashboard() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Mapa Digital do Pátio</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.titulo, { color: colors.primary }]}>
+        Mapa Digital do Pátio
+      </Text>
 
       <MapView
         style={styles.patio}
@@ -99,29 +104,40 @@ export default function PatioDashboard() {
         ))}
       </MapView>
 
-      <View style={styles.painelInfo}>
+      <View style={[styles.painelInfo, { backgroundColor: colors.surface }]}>
         {motoSelecionada ? (
           <>
-            <Text style={styles.tituloInfo}>
+            <Text style={[styles.tituloInfo, { color: colors.primary }]}>
               Detalhes da Moto {motoSelecionada.id}
             </Text>
-            <Text>Nome: {motoSelecionada.name}</Text>
-            <Text>Status: {motoSelecionada.status}</Text>
-            <Text>
-              Localização (lat/lng): {paraLatitude(motoSelecionada.y).toFixed(6)},{" "}
+            <Text style={{ color: colors.text }}>
+              Nome: {motoSelecionada.name}
+            </Text>
+            <Text style={{ color: colors.text }}>
+              Status: {motoSelecionada.status}
+            </Text>
+            <Text style={{ color: colors.text }}>
+              Localização (lat/lng):{" "}
+              {paraLatitude(motoSelecionada.y).toFixed(6)},{" "}
               {paraLongitude(motoSelecionada.x).toFixed(6)}
             </Text>
 
             <View style={styles.linhaBotoes}>
               <TouchableOpacity
-                style={styles.botaoDetalhes}
+                style={[
+                  styles.botaoDetalhes,
+                  { backgroundColor: colors.primary },
+                ]}
                 onPress={() => setMostrarModalDetalhes(true)}
               >
                 <Text style={styles.textoBotaoDetalhes}>Ver Detalhes</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.botaoFechar}
+                style={[
+                  styles.botaoFechar,
+                  { backgroundColor: colors.success },
+                ]}
                 onPress={() => {
                   setMotoSelecionada(null);
                   setMostrarModalDetalhes(false);
@@ -132,7 +148,7 @@ export default function PatioDashboard() {
             </View>
           </>
         ) : (
-          <Text style={styles.textoInfo}>
+          <Text style={[styles.textoInfo, { color: colors.textSecondary }]}>
             Toque em uma moto para ver detalhes
           </Text>
         )}
@@ -145,14 +161,29 @@ export default function PatioDashboard() {
         onRequestClose={() => setMostrarModalDetalhes(false)}
       >
         <View style={styles.fundoModal}>
-          <View style={styles.containerModal}>
-            <Text style={styles.tituloModal}>Informações da Moto</Text>
-            <Text>Marca: {motoSelecionada?.marca}</Text>
-            <Text>Configurações: {motoSelecionada?.configuracoes}</Text>
+          <View
+            style={[styles.containerModal, { backgroundColor: colors.surface }]}
+          >
+            <Text style={[styles.tituloModal, { color: colors.primary }]}>
+              Informações da Moto
+            </Text>
+            <Text style={{ color: colors.text }}>
+              Marca: {motoSelecionada?.marca}
+            </Text>
+            <Text style={{ color: colors.text }}>
+              Configurações: {motoSelecionada?.configuracoes}
+            </Text>
 
             <TouchableOpacity
               onPress={() => setMostrarModalDetalhes(false)}
-              style={[styles.botaoFechar, { alignSelf: "center", marginTop: 20 }]}
+              style={[
+                styles.botaoFechar,
+                {
+                  backgroundColor: colors.success,
+                  alignSelf: "center",
+                  marginTop: 20,
+                },
+              ]}
             >
               <Text style={styles.textoBotaoFechar}>Fechar Detalhes</Text>
             </TouchableOpacity>
@@ -167,7 +198,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#eef2f5",
   },
   titulo: {
     fontSize: 24,
@@ -182,7 +212,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   painelInfo: {
-    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 15,
     minHeight: 120,
@@ -195,7 +224,6 @@ const styles = StyleSheet.create({
   },
   textoInfo: {
     fontStyle: "italic",
-    color: "#666",
   },
   linhaBotoes: {
     marginTop: 15,
@@ -203,7 +231,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   botaoDetalhes: {
-    backgroundColor: "#006400",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 6,
@@ -213,7 +240,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   botaoFechar: {
-    backgroundColor: "#28A745",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 6,
@@ -230,7 +256,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   containerModal: {
-    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 20,
     width: "90%",

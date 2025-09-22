@@ -30,14 +30,13 @@ public class Motorista {
     private String endereco;
     
     @Column(nullable = false)
-    private String status = "ativo"; // ativo, inativo, suspenso
+    private String status = "ativo";
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moto_id")
     @JsonIgnoreProperties({"motoristas"})
     private Moto moto;
     
-    // Constructors
     public Motorista() {}
     
     public Motorista(String nome, String cpf, String telefone, String email, String cnh, String endereco, String status) {
@@ -49,8 +48,6 @@ public class Motorista {
         this.endereco = endereco;
         this.status = status;
     }
-    
-    // Getters and Setters
     public Long getId() {
         return id;
     }

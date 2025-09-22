@@ -22,7 +22,7 @@ public class Moto {
     private String configuracoes;
     
     @Column(nullable = false)
-    private String status = "parada"; // parada, em uso, aguardando
+    private String status = "parada";
     
     @Column(nullable = false)
     private Double x;
@@ -30,11 +30,10 @@ public class Moto {
     @Column(nullable = false)
     private Double y;
     
-    @OneToMany(mappedBy = "moto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "moto", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"moto"})
     private List<Motorista> motoristas;
     
-    // Constructors
     public Moto() {}
     
     public Moto(String name, String marca, String configuracoes, String status, Double x, Double y) {
@@ -45,8 +44,6 @@ public class Moto {
         this.x = x;
         this.y = y;
     }
-    
-    // Getters and Setters
     public Long getId() {
         return id;
     }

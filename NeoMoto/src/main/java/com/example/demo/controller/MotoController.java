@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Moto;
+import com.example.demo.entity.Motorista;
 import com.example.demo.repository.MotoRepository;
+import com.example.demo.repository.MotoristaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +18,15 @@ public class MotoController {
 
     @Autowired
     private MotoRepository motoRepository;
+    
+    @Autowired
+    private MotoristaRepository motoristaRepository;
 
-    // GET - Listar todas as motos
     @GetMapping
     public List<Moto> getAllMotos() {
         return motoRepository.findAll();
     }
 
-    // GET - Buscar moto por ID
     @GetMapping("/{id}")
     public ResponseEntity<Moto> getMotoById(@PathVariable Long id) {
         Optional<Moto> moto = motoRepository.findById(id);
@@ -33,23 +36,19 @@ public class MotoController {
         return ResponseEntity.notFound().build();
     }
 
-    // GET - Buscar motos por status
     @GetMapping("/status/{status}")
     public List<Moto> getMotosByStatus(@PathVariable String status) {
         return motoRepository.findByStatus(status);
     }
 
-    // GET - Buscar motos por marca
     @GetMapping("/marca/{marca}")
     public List<Moto> getMotosByMarca(@PathVariable String marca) {
         return motoRepository.findByMarca(marca);
     }
 
-    // POST - Criar nova moto
     @PostMapping
     public ResponseEntity<?> createMoto(@RequestBody Moto moto) {
         try {
-            // Se x e y não foram fornecidos, gerar valores aleatórios
             if (moto.getX() == null) {
                 moto.setX(Math.random() * 100);
             }
@@ -57,7 +56,6 @@ public class MotoController {
                 moto.setY(Math.random() * 100);
             }
             
-            // Definir status padrão se não informado
             if (moto.getStatus() == null || moto.getStatus().isEmpty()) {
                 moto.setStatus("parada");
             }
@@ -69,7 +67,6 @@ public class MotoController {
         }
     }
 
-    // PUT - Atualizar moto
     @PutMapping("/{id}")
     public ResponseEntity<Moto> updateMoto(@PathVariable Long id, @RequestBody Moto motoDetails) {
         Optional<Moto> optionalMoto = motoRepository.findById(id);
@@ -94,14 +91,23 @@ public class MotoController {
         return ResponseEntity.notFound().build();
     }
 
-    // DELETE - Deletar moto
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMoto(@PathVariable Long id) {
         Optional<Moto> moto = motoRepository.findById(id);
         
         if (moto.isPresent()) {
-            motoRepository.delete(moto.get());
-            return ResponseEntity.ok().build();
+            try {
+                List<Motorista> motoristasComEstaMoto = motoristaRepository.findByMotoId(id);
+                for (Motorista motorista : motoristasComEstaMoto) {
+                    motorista.setMoto(null);
+                    motoristaRepository.save(motorista);
+                }
+                
+                motoRepository.delete(moto.get());
+                return ResponseEntity.ok().build();
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("{\"error\":\"Erro ao excluir moto: " + e.getMessage() + "\"}");
+            }
         }
         
         return ResponseEntity.notFound().build();

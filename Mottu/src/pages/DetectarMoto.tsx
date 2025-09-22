@@ -9,10 +9,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
+  const { colors } = useTheme();
 
   const selecionarImagem = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -65,40 +67,63 @@ export default function DetectarMoto() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titulo}>Detecção de Motos</Text>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      <Text style={[styles.titulo, { color: colors.primary }]}>
+        Detecção de Motos
+      </Text>
 
-      <TouchableOpacity style={styles.botao} onPress={selecionarImagem}>
+      <TouchableOpacity
+        style={[styles.botao, { backgroundColor: colors.primary }]}
+        onPress={selecionarImagem}
+      >
         <Text style={styles.textoBotao}>Selecionar Imagem</Text>
       </TouchableOpacity>
 
       {imageUri && (
         <>
-          <Image source={{ uri: imageUri }} style={styles.image} />
+          <Image
+            source={{ uri: imageUri }}
+            style={[styles.image, { borderColor: colors.border }]}
+          />
 
-          <TouchableOpacity style={styles.botao} onPress={enviarImagem}>
+          <TouchableOpacity
+            style={[styles.botao, { backgroundColor: colors.success }]}
+            onPress={enviarImagem}
+          >
             <Text style={styles.textoBotao}>Enviar para API</Text>
           </TouchableOpacity>
         </>
       )}
 
       {resultado && (
-        <View style={styles.resultadoContainer}>
-          <Text style={styles.resultadoTitulo}>Resultado da Detecção:</Text>
+        <View
+          style={[
+            styles.resultadoContainer,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.resultadoTitulo, { color: colors.primary }]}>
+            Resultado da Detecção:
+          </Text>
 
           {resultado.motos_detectadas.length > 0 ? (
-            <Text style={styles.mensagemSucesso}>
+            <Text style={[styles.mensagemSucesso, { color: colors.success }]}>
               {" "}
               Moto detectada na imagem!
             </Text>
           ) : (
-            <Text style={styles.mensagemErro}>
+            <Text style={[styles.mensagemErro, { color: colors.error }]}>
               {" "}
               Nenhuma moto detectada na imagem.
             </Text>
           )}
 
-          <Text style={styles.resultadoTexto}>
+          <Text style={[styles.resultadoTexto, { color: colors.text }]}>
             {JSON.stringify(resultado, null, 2)}
           </Text>
         </View>
@@ -111,17 +136,14 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     alignItems: "center",
-    backgroundColor: "#fff",
     flexGrow: 1,
   },
   titulo: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#228B22",
     marginBottom: 20,
   },
   botao: {
-    backgroundColor: "#228B22",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 10,
@@ -138,36 +160,29 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: "#ddd",
   },
   resultadoContainer: {
     marginTop: 20,
-    backgroundColor: "#f8f8f8",
     padding: 15,
     borderRadius: 10,
     width: "100%",
     borderWidth: 1,
-    borderColor: "#ccc",
   },
   resultadoTitulo: {
     fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
-    color: "#333",
   },
   resultadoTexto: {
     fontFamily: "monospace",
-    color: "#555",
     fontSize: 14,
   },
   mensagemSucesso: {
-    color: "#228B22",
     fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
   },
   mensagemErro: {
-    color: "#B22222",
     fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,

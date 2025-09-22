@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface Alerta {
   id: string;
@@ -46,6 +47,7 @@ const alertasMockados: Alerta[] = [
 
 export default function DashboardAlertas({ navigation }: any) {
   const [alertas, setAlertas] = useState<Alerta[]>([]);
+  const { colors } = useTheme();
 
   useEffect(() => {
     setAlertas(alertasMockados);
@@ -59,7 +61,7 @@ export default function DashboardAlertas({ navigation }: any) {
   };
 
   const gerarCoordenadasAleatorias = () => {
-    const latitude = (-23.5 + Math.random()).toFixed(6); 
+    const latitude = (-23.5 + Math.random()).toFixed(6);
     const longitude = (-46.6 + Math.random()).toFixed(6);
     Alert.alert(
       "Localização Atual do Veículo",
@@ -68,8 +70,10 @@ export default function DashboardAlertas({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Alertas de Veículos</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.titulo, { color: colors.primary }]}>
+        Alertas de Veículos
+      </Text>
 
       <FlatList
         data={alertas}
@@ -78,20 +82,32 @@ export default function DashboardAlertas({ navigation }: any) {
           <View
             style={[
               styles.card,
+              { backgroundColor: colors.surface },
               item.tipo === "Desaparecido"
                 ? styles.cardDesaparecido
                 : styles.cardManutencao,
             ]}
           >
             <TouchableOpacity onPress={() => exibirDetalhes(item)}>
-              <Text style={styles.modelo}>{item.modelo}</Text>
-              <Text style={styles.placa}>{item.placa}</Text>
-              <Text style={styles.tipo}>{item.tipo}</Text>
-              <Text style={styles.data}>{item.data}</Text>
+              <Text style={[styles.modelo, { color: colors.primary }]}>
+                {item.modelo}
+              </Text>
+              <Text style={[styles.placa, { color: colors.text }]}>
+                {item.placa}
+              </Text>
+              <Text style={[styles.tipo, { color: colors.text }]}>
+                {item.tipo}
+              </Text>
+              <Text style={[styles.data, { color: colors.textSecondary }]}>
+                {item.data}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.botaoLocalizacao}
+              style={[
+                styles.botaoLocalizacao,
+                { backgroundColor: colors.success },
+              ]}
               onPress={gerarCoordenadasAleatorias}
             >
               <Text style={styles.textoBotao}>Consultar Localização </Text>
@@ -99,7 +115,13 @@ export default function DashboardAlertas({ navigation }: any) {
           </View>
         )}
         ListEmptyComponent={
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 20,
+              color: colors.textSecondary,
+            }}
+          >
             Nenhum alerta no momento.
           </Text>
         }
@@ -111,14 +133,12 @@ export default function DashboardAlertas({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0FFF0",
     paddingHorizontal: 20,
     paddingVertical: 30,
   },
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#228B22",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -128,37 +148,30 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   cardDesaparecido: {
-    backgroundColor: "#f8d7da",
     borderLeftColor: "#dc3545",
     borderLeftWidth: 6,
   },
   cardManutencao: {
-    backgroundColor: "#fff3cd",
     borderLeftColor: "#ffc107",
     borderLeftWidth: 6,
   },
   modelo: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#155724",
   },
   placa: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#555",
   },
   tipo: {
     marginTop: 4,
     fontSize: 14,
-    color: "#333",
   },
   data: {
     fontSize: 12,
-    color: "#777",
   },
   botaoLocalizacao: {
     marginTop: 10,
-    backgroundColor: "#28a745",
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: "center",
