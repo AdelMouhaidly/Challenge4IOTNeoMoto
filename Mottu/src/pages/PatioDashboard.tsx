@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Modal,
+  ScrollView,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -14,7 +15,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 
 const LARGURA_PATIO = Dimensions.get("window").width - 40;
-const ALTURA_PATIO = 400;
+const ALTURA_PATIO = 500;
 
 const LAT_MIN = -23.551;
 const LAT_MAX = -23.549;
@@ -52,7 +53,7 @@ function gerarMotos(quantidade: number): Moto[] {
 }
 
 export default function PatioDashboard() {
-  const [motos, setMotos] = useState<Moto[]>(gerarMotos(15));
+  const [motos, setMotos] = useState<Moto[]>(gerarMotos(30));
   const [motoSelecionada, setMotoSelecionada] = useState<Moto | null>(null);
   const [mostrarModalDetalhes, setMostrarModalDetalhes] = useState(false);
   const { colors } = useTheme();
@@ -73,20 +74,63 @@ export default function PatioDashboard() {
     return LNG_MIN + (LNG_MAX - LNG_MIN) * x;
   }
 
+  const contagemStatus = {
+    parada: motos.filter((m) => m.status === "parada").length,
+    "em uso": motos.filter((m) => m.status === "em uso").length,
+    aguardando: motos.filter((m) => m.status === "aguardando").length,
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.titulo, { color: colors.primary }]}>
-        {t("patio.title")}
-      </Text>
+      <ScrollView
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Text style={[styles.titulo, { color: colors.primary }]}>
+          {t("patio.title")}
+        </Text>
 
-      <MapView
+        <View style={[styles.legendaContainer, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.legendaTitulo, { color: colors.text }]}>
+            {t("patio.legend")}:
+          </Text>
+          <View style={styles.legendaItens}>
+            <View style={styles.legendaItem}>
+              <View style={[styles.legendaCor, { backgroundColor: "#27ae60" }]} />
+              <Text style={[styles.legendaTexto, { color: colors.text }]}>
+                {t("patio.stopped")} ({contagemStatus.parada})
+              </Text>
+            </View>
+            <View style={styles.legendaItem}>
+              <View style={[styles.legendaCor, { backgroundColor: "#f39c12" }]} />
+              <Text style={[styles.legendaTexto, { color: colors.text }]}>
+                {t("patio.inUse")} ({contagemStatus["em uso"]})
+              </Text>
+            </View>
+            <View style={styles.legendaItem}>
+              <View style={[styles.legendaCor, { backgroundColor: "#c0392b" }]} />
+              <Text style={[styles.legendaTexto, { color: colors.text }]}>
+                {t("patio.waiting")} ({contagemStatus.aguardando})
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <MapView
         style={styles.patio}
         initialRegion={{
           latitude: (LAT_MIN + LAT_MAX) / 2,
           longitude: (LNG_MIN + LNG_MAX) / 2,
-          latitudeDelta: 0.003,
-          longitudeDelta: 0.003,
+          latitudeDelta: 0.0025,
+          longitudeDelta: 0.0025,
         }}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
+        showsCompass={true}
+        zoomEnabled={true}
+        scrollEnabled={true}
+        pitchEnabled={true}
+        rotateEnabled={true}
       >
         {motos.map((moto) => (
           <Marker
@@ -95,68 +139,73 @@ export default function PatioDashboard() {
               latitude: paraLatitude(moto.y),
               longitude: paraLongitude(moto.x),
             }}
-            pinColor={corDoMarcador(moto.status)}
             onPress={() => {
               setMotoSelecionada(moto);
               setMostrarModalDetalhes(false);
             }}
           >
-            <Icon name="motorcycle" size={20} color="#000000" />
+            <View style={[
+              styles.marcadorMoto,
+              { backgroundColor: corDoMarcador(moto.status) }
+            ]}>
+              <Icon name="motorcycle" size={12} color="#FFFFFF" />
+            </View>
           </Marker>
         ))}
       </MapView>
 
-      <View style={[styles.painelInfo, { backgroundColor: colors.surface }]}>
-        {motoSelecionada ? (
-          <>
-            <Text style={[styles.tituloInfo, { color: colors.primary }]}>
-              {t("patio.detailsTitle")} {motoSelecionada.id}
-            </Text>
-            <Text style={{ color: colors.text }}>
-              {t("patio.name")}: {motoSelecionada.name}
-            </Text>
-            <Text style={{ color: colors.text }}>
-              {t("patio.status")}: {motoSelecionada.status}
-            </Text>
-            <Text style={{ color: colors.text }}>
-              {t("patio.location")}:{" "}
-              {paraLatitude(motoSelecionada.y).toFixed(6)},{" "}
-              {paraLongitude(motoSelecionada.x).toFixed(6)}
-            </Text>
+        <View style={[styles.painelInfo, { backgroundColor: colors.surface }]}>
+          {motoSelecionada ? (
+            <>
+              <Text style={[styles.tituloInfo, { color: colors.primary }]}>
+                {t("patio.detailsTitle")} {motoSelecionada.id}
+              </Text>
+              <Text style={{ color: colors.text }}>
+                {t("patio.name")}: {motoSelecionada.name}
+              </Text>
+              <Text style={{ color: colors.text }}>
+                {t("patio.status")}: {motoSelecionada.status}
+              </Text>
+              <Text style={{ color: colors.text }}>
+                {t("patio.location")}:{" "}
+                {paraLatitude(motoSelecionada.y).toFixed(6)},{" "}
+                {paraLongitude(motoSelecionada.x).toFixed(6)}
+              </Text>
 
-            <View style={styles.linhaBotoes}>
-              <TouchableOpacity
-                style={[
-                  styles.botaoDetalhes,
-                  { backgroundColor: colors.primary },
-                ]}
-                onPress={() => setMostrarModalDetalhes(true)}
-              >
-                <Text style={styles.textoBotaoDetalhes}>
-                  {t("common.viewDetails")}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.linhaBotoes}>
+                <TouchableOpacity
+                  style={[
+                    styles.botaoDetalhes,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => setMostrarModalDetalhes(true)}
+                >
+                  <Text style={styles.textoBotaoDetalhes}>
+                    {t("common.viewDetails")}
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.botaoFechar,
-                  { backgroundColor: colors.success },
-                ]}
-                onPress={() => {
-                  setMotoSelecionada(null);
-                  setMostrarModalDetalhes(false);
-                }}
-              >
-                <Text style={styles.textoBotaoFechar}>{t("common.close")}</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <Text style={[styles.textoInfo, { color: colors.textSecondary }]}>
-            {t("patio.tapForDetails")}
-          </Text>
-        )}
-      </View>
+                <TouchableOpacity
+                  style={[
+                    styles.botaoFechar,
+                    { backgroundColor: colors.success },
+                  ]}
+                  onPress={() => {
+                    setMotoSelecionada(null);
+                    setMostrarModalDetalhes(false);
+                  }}
+                >
+                  <Text style={styles.textoBotaoFechar}>{t("common.close")}</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <Text style={[styles.textoInfo, { color: colors.textSecondary }]}>
+              {t("patio.tapForDetails")}
+            </Text>
+          )}
+        </View>
+      </ScrollView>
 
       <Modal
         visible={mostrarModalDetalhes}
@@ -201,12 +250,42 @@ export default function PatioDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 40,
   },
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  legendaContainer: {
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+  },
+  legendaTitulo: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  legendaItens: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  legendaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  legendaCor: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginRight: 6,
+  },
+  legendaTexto: {
+    fontSize: 12,
   },
   patio: {
     width: LARGURA_PATIO,
@@ -214,6 +293,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 20,
+  },
+  marcadorMoto: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   painelInfo: {
     borderRadius: 8,
