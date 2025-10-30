@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 export type Motorista = {
   id: number;
@@ -53,6 +54,7 @@ export default function GestaoMotoristas() {
     null
   );
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -84,11 +86,11 @@ export default function GestaoMotoristas() {
         const data = await response.json();
         setMotoristas(data);
       } else {
-        Alert.alert("Erro", "Não foi possível carregar os motoristas");
+        Alert.alert(t("drivers.errorTitle"), t("drivers.errorLoad"));
       }
     } catch (error) {
       console.error("Erro ao carregar motoristas:", error);
-      Alert.alert("Erro", "Erro de conexão com a API");
+      Alert.alert(t("drivers.errorTitle"), t("drivers.errorLoad"));
     } finally {
       setLoading(false);
     }
@@ -139,7 +141,7 @@ export default function GestaoMotoristas() {
 
   const salvarMotorista = async () => {
     if (!nome || !cpf || !telefone || !email || !cnh || !endereco) {
-      Alert.alert("Erro", "Preencha todos os campos obrigatórios");
+      Alert.alert(t("drivers.errorTitle"), t("drivers.errorEmptyFields"));
       return;
     }
 
@@ -196,18 +198,18 @@ export default function GestaoMotoristas() {
 
       if (response.ok) {
         Alert.alert(
-          "Sucesso",
-          motoristaEditando ? "Motorista atualizado!" : "Motorista cadastrado!"
+          t("common.success"),
+          motoristaEditando ? t("drivers.successUpdate") : t("drivers.successCreate")
         );
         setModalCadastroVisivel(false);
         limparFormulario();
         carregarMotoristas();
       } else {
-        Alert.alert("Erro", "Não foi possível salvar o motorista");
+        Alert.alert(t("drivers.errorTitle"), motorista ? t("drivers.errorUpdate") : t("drivers.errorCreate"));
       }
     } catch (error) {
       console.error("Erro ao salvar motorista:", error);
-      Alert.alert("Erro", "Erro de conexão com a API");
+      Alert.alert(t("drivers.errorTitle"), t("drivers.errorLoad"));
     } finally {
       setLoading(false);
     }
@@ -215,10 +217,10 @@ export default function GestaoMotoristas() {
 
   const excluirMotorista = async (id: number) => {
     Alert.alert(
-      "Confirmar Exclusão",
-      "Deseja realmente excluir este motorista?",
+      t("drivers.confirmDelete"),
+      t("drivers.confirmDeleteMessage"),
       [
-        { text: "Cancelar", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
           text: "Excluir",
           style: "destructive",
@@ -230,14 +232,14 @@ export default function GestaoMotoristas() {
               });
 
               if (response.ok) {
-                Alert.alert("Sucesso", "Motorista excluído com sucesso!");
+                Alert.alert(t("common.success"), t("drivers.successDelete"));
                 carregarMotoristas();
               } else {
-                Alert.alert("Erro", "Não foi possível excluir o motorista");
+                Alert.alert(t("drivers.errorTitle"), t("drivers.errorDelete"));
               }
             } catch (error) {
               console.error("Erro ao excluir motorista:", error);
-              Alert.alert("Erro", "Erro de conexão com a API");
+              Alert.alert(t("drivers.errorTitle"), t("drivers.errorLoad"));
             } finally {
               setLoading(false);
             }
@@ -257,18 +259,18 @@ export default function GestaoMotoristas() {
           CPF: {item.cpf}
         </Text>
         <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-          Email: {item.email}
+          {t("drivers.email")}: {item.email}
         </Text>
         <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-          CNH: {item.cnh}
+          {t("drivers.cnh")}: {item.cnh}
         </Text>
         <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-          Status: {item.status}
+          {t("drivers.status")}: {item.status}
         </Text>
         {item.moto && (
           <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-            Moto: {item.moto.name} ({item.moto.marca})
-            {item.moto.status && ` - Status: ${item.moto.status}`}
+            {t("drivers.bike")}: {item.moto.name} ({item.moto.marca})
+            {item.moto.status && ` - ${t("drivers.status")}: ${item.moto.status}`}
           </Text>
         )}
       </View>
@@ -277,13 +279,13 @@ export default function GestaoMotoristas() {
           style={[styles.botaoEditar, { backgroundColor: colors.primary }]}
           onPress={() => abrirModalEdicao(item)}
         >
-          <Text style={styles.textoBotaoAcao}>Editar</Text>
+          <Text style={styles.textoBotaoAcao}>{t("common.edit")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.botaoExcluir, { backgroundColor: colors.error }]}
           onPress={() => excluirMotorista(item.id)}
         >
-          <Text style={styles.textoBotaoAcao}>Excluir</Text>
+          <Text style={styles.textoBotaoAcao}>{t("common.delete")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -292,14 +294,14 @@ export default function GestaoMotoristas() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Gestão de Motoristas
+        {t("drivers.title")}
       </Text>
 
       <TouchableOpacity
         style={[styles.botaoCadastrar, { backgroundColor: colors.success }]}
         onPress={abrirModalCadastro}
       >
-        <Text style={styles.textoBotaoCadastrar}>Cadastrar Novo Motorista</Text>
+        <Text style={styles.textoBotaoCadastrar}>{t("drivers.addDriver")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -314,7 +316,7 @@ export default function GestaoMotoristas() {
         onPress={() => setModalVisivel(true)}
       >
         <Text style={[styles.textoBotaoCadastrar, { color: colors.success }]}>
-          Ver Todos os Motoristas
+          {t("drivers.viewAll")}
         </Text>
       </TouchableOpacity>
 
@@ -330,7 +332,7 @@ export default function GestaoMotoristas() {
           ]}
         >
           <Text style={[styles.tituloModal, { color: colors.primary }]}>
-            Motoristas Cadastrados
+            {t("drivers.registeredDrivers")}
           </Text>
 
           {loading ? (
@@ -349,7 +351,7 @@ export default function GestaoMotoristas() {
                 <Text
                   style={[styles.nenhumItem, { color: colors.textSecondary }]}
                 >
-                  Nenhum motorista cadastrado.
+                  {t("drivers.noDrivers")}
                 </Text>
               }
             />
@@ -362,7 +364,7 @@ export default function GestaoMotoristas() {
             ]}
             onPress={() => setModalVisivel(false)}
           >
-            <Text style={styles.textoBotaoCadastrar}>Fechar</Text>
+            <Text style={styles.textoBotaoCadastrar}>{t("common.close")}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -379,7 +381,7 @@ export default function GestaoMotoristas() {
           ]}
         >
           <Text style={[styles.tituloModal, { color: colors.primary }]}>
-            {motoristaEditando ? "Editar Motorista" : "Cadastrar Motorista"}
+            {motoristaEditando ? t("drivers.editDriver") : t("drivers.addDriver")}
           </Text>
 
           <TextInput
@@ -391,7 +393,7 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="Nome completo"
+            placeholder={t("drivers.namePlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={nome}
             onChangeText={setNome}
@@ -406,7 +408,7 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="CPF"
+            placeholder={t("drivers.cpfPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={cpf}
             onChangeText={setCpf}
@@ -423,7 +425,7 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="Telefone"
+            placeholder={t("drivers.phonePlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={telefone}
             onChangeText={setTelefone}
@@ -439,7 +441,7 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="Email"
+            placeholder={t("drivers.emailPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={email}
             onChangeText={setEmail}
@@ -456,7 +458,7 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="CNH"
+            placeholder={t("drivers.cnhPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={cnh}
             onChangeText={setCnh}
@@ -471,14 +473,14 @@ export default function GestaoMotoristas() {
                 color: colors.text,
               },
             ]}
-            placeholder="Endereço"
+            placeholder={t("drivers.addressPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={endereco}
             onChangeText={setEndereco}
             multiline
           />
 
-          <Text style={[styles.label, { color: colors.primary }]}>Status:</Text>
+          <Text style={[styles.label, { color: colors.primary }]}>{t("drivers.status")}:</Text>
           <View
             style={[
               styles.pickerContainer,
@@ -490,14 +492,14 @@ export default function GestaoMotoristas() {
               onValueChange={setStatus}
               style={[styles.picker, { color: colors.text }]}
             >
-              <Picker.Item label="Ativo" value="ativo" />
-              <Picker.Item label="Inativo" value="inativo" />
-              <Picker.Item label="Suspenso" value="suspenso" />
+              <Picker.Item label={t("drivers.active")} value="ativo" />
+              <Picker.Item label={t("drivers.inactive")} value="inativo" />
+              <Picker.Item label={t("drivers.suspended")} value="suspenso" />
             </Picker>
           </View>
 
           <Text style={[styles.label, { color: colors.primary }]}>
-            Moto (opcional):
+            {t("drivers.bikeOptional")}:
           </Text>
           <View
             style={[
@@ -510,13 +512,13 @@ export default function GestaoMotoristas() {
               onValueChange={setMotoSelecionada}
               style={[styles.picker, { color: colors.text }]}
             >
-              <Picker.Item label="Nenhuma moto selecionada" value={null} />
+              <Picker.Item label={t("drivers.noBikeSelected")} value={null} />
               {motoristaEditando &&
                 motoristaEditando.moto &&
                 !motos.find((m) => m.id === motoristaEditando.moto?.id) && (
                   <Picker.Item
                     key={`current-${motoristaEditando.moto.id}`}
-                    label={`${motoristaEditando.moto.name} (${motoristaEditando.moto.marca}) - [EXCLUÍDA]`}
+                    label={`${motoristaEditando.moto.name} (${motoristaEditando.moto.marca}) - [${t("drivers.deleted")}]`}
                     value={motoristaEditando.moto.id}
                   />
                 )}
@@ -543,7 +545,7 @@ export default function GestaoMotoristas() {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.textoBotaoCadastrar}>
-                  {motoristaEditando ? "Atualizar" : "Cadastrar"}
+                  {motoristaEditando ? t("common.update") : t("common.add")}
                 </Text>
               )}
             </TouchableOpacity>
@@ -558,7 +560,7 @@ export default function GestaoMotoristas() {
                 limparFormulario();
               }}
             >
-              <Text style={styles.textoBotaoCadastrar}>Cancelar</Text>
+              <Text style={styles.textoBotaoCadastrar}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>

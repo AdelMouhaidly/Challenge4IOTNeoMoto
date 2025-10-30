@@ -15,6 +15,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { StackLista } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 type Props = NativeStackScreenProps<StackLista, "Perfil">;
 
@@ -28,6 +29,7 @@ export default function Perfil({ navigation }: Props) {
   const [carregando, setCarregando] = useState<boolean>(false);
   const [mostrarSenha, setMostrarSenha] = useState<boolean>(false);
   const { colors, isDark } = useTheme();
+  const { t, locale, setLocale } = useLocalization();
 
   useEffect(() => {
     const carregarUsuario = async () => {
@@ -44,7 +46,7 @@ export default function Perfil({ navigation }: Props) {
 
   const salvarAlteracoes = async () => {
     if (!nome.trim() || !email.trim()) {
-      Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
+      Alert.alert(t("profile.errorTitle"), t("profile.errorEmptyFields"));
       return;
     }
 
@@ -59,9 +61,9 @@ export default function Perfil({ navigation }: Props) {
       setSenha(usuarioAtualizado.senha);
       setNovaSenha("");
       setMostrarNovoInputSenha(false);
-      Alert.alert("Sucesso", "Seus dados foram atualizados com sucesso!");
+      Alert.alert(t("profile.successTitle"), t("profile.successUpdate"));
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível salvar as alterações.");
+      Alert.alert(t("profile.errorTitle"), t("profile.errorSave"));
     } finally {
       setCarregando(false);
     }
@@ -69,11 +71,11 @@ export default function Perfil({ navigation }: Props) {
 
   const excluirConta = async () => {
     Alert.alert(
-      "Confirmar Exclusão",
-      "Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.",
+      t("profile.confirmDelete"),
+      t("profile.confirmDeleteMessage"),
       [
         {
-          text: "Cancelar",
+          text: t("common.cancel"),
           style: "cancel",
         },
         {
@@ -82,8 +84,8 @@ export default function Perfil({ navigation }: Props) {
           onPress: async () => {
             await AsyncStorage.removeItem("user");
             Alert.alert(
-              "Conta Excluída",
-              "Sua conta foi excluída com sucesso."
+              t("profile.accountDeleted"),
+              t("profile.accountDeletedMessage")
             );
             navigation.replace("Login");
           },
@@ -243,6 +245,54 @@ export default function Perfil({ navigation }: Props) {
               </TouchableOpacity>
             </View>
           )}
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={[styles.label, { color: colors.text }]}>
+            <Ionicons name="language" size={16} color={colors.primary} />{" "}
+            {t("profile.language")}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity
+              style={[
+                styles.languageButton,
+                {
+                  backgroundColor:
+                    locale === "pt-BR" ? colors.primary : colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+              onPress={() => setLocale("pt-BR")}
+            >
+              <Text
+                style={{
+                  color: locale === "pt-BR" ? "#fff" : colors.text,
+                  fontWeight: "600",
+                }}
+              >
+                {t("profile.portuguese")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.languageButton,
+                {
+                  backgroundColor:
+                    locale === "es" ? colors.primary : colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+              onPress={() => setLocale("es")}
+            >
+              <Text
+                style={{
+                  color: locale === "es" ? "#fff" : colors.text,
+                  fontWeight: "600",
+                }}
+              >
+                {t("profile.spanish")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -476,5 +526,13 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  languageButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: "center",
   },
 });

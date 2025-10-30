@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 interface Alerta {
   id: string;
@@ -48,15 +49,19 @@ const alertasMockados: Alerta[] = [
 export default function DashboardAlertas({ navigation }: any) {
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   useEffect(() => {
     setAlertas(alertasMockados);
   }, []);
 
   const exibirDetalhes = (alerta: Alerta) => {
+    const tipoTraduzido = alerta.tipo === "Desaparecido" 
+      ? t("alerts.disappeared") 
+      : t("alerts.maintenance");
     Alert.alert(
-      `Alerta de ${alerta.tipo}`,
-      `${alerta.modelo} (${alerta.placa})\n\n${alerta.descricao}\n\nData: ${alerta.data}`
+      `${t("alerts.alertOf")} ${tipoTraduzido}`,
+      `${alerta.modelo} (${alerta.placa})\n\n${alerta.descricao}\n\n${t("alerts.date")}: ${alerta.data}`
     );
   };
 
@@ -64,15 +69,15 @@ export default function DashboardAlertas({ navigation }: any) {
     const latitude = (-23.5 + Math.random()).toFixed(6);
     const longitude = (-46.6 + Math.random()).toFixed(6);
     Alert.alert(
-      "Localização Atual do Veículo",
-      `Latitude: ${latitude}\nLongitude: ${longitude}`
+      t("alerts.currentLocation"),
+      `${t("alerts.latitude")}: ${latitude}\n${t("alerts.longitude")}: ${longitude}`
     );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Alertas de Veículos
+        {t("alerts.title")}
       </Text>
 
       <FlatList
@@ -96,7 +101,7 @@ export default function DashboardAlertas({ navigation }: any) {
                 {item.placa}
               </Text>
               <Text style={[styles.tipo, { color: colors.text }]}>
-                {item.tipo}
+                {item.tipo === "Desaparecido" ? t("alerts.disappeared") : t("alerts.maintenance")}
               </Text>
               <Text style={[styles.data, { color: colors.textSecondary }]}>
                 {item.data}
@@ -110,7 +115,7 @@ export default function DashboardAlertas({ navigation }: any) {
               ]}
               onPress={gerarCoordenadasAleatorias}
             >
-              <Text style={styles.textoBotao}>Consultar Localização </Text>
+              <Text style={styles.textoBotao}>{t("alerts.viewMap")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -122,7 +127,7 @@ export default function DashboardAlertas({ navigation }: any) {
               color: colors.textSecondary,
             }}
           >
-            Nenhum alerta no momento.
+            {t("alerts.noAlerts")}
           </Text>
         }
       />

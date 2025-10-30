@@ -11,10 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackLista } from "../types/index";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 export default function MenuPersonalizado(props: any) {
   const [dadosUsuario, setDadosUsuario] = useState({ nome: "", email: "" });
   const { colors, toggleTheme, isDark } = useTheme();
+  const { t, locale, setLocale } = useLocalization();
 
   const navegacao = useNavigation<NativeStackNavigationProp<StackLista>>();
 
@@ -75,7 +77,7 @@ export default function MenuPersonalizado(props: any) {
           style={[styles.cabecalhoSecao, { backgroundColor: colors.surface }]}
         >
           <Text style={[styles.tituloSecao, { color: colors.textSecondary }]}>
-            PAINEL PRINCIPAL
+            {t("drawer.home").toUpperCase()}
           </Text>
         </View>
         <DrawerItemList {...props} />
@@ -85,7 +87,7 @@ export default function MenuPersonalizado(props: any) {
         />
 
         <DrawerItem
-          label={`Tema ${isDark ? "Claro" : "Escuro"}`}
+          label={t("drawer.theme")}
           onPress={toggleTheme}
           inactiveTintColor={colors.text}
           activeTintColor={colors.primary}
@@ -100,10 +102,26 @@ export default function MenuPersonalizado(props: any) {
           )}
         />
 
+        <DrawerItem
+          label={`${t("profile.language")}: ${locale === "pt-BR" ? "Português" : "Español"}`}
+          onPress={() => setLocale(locale === "pt-BR" ? "es" : "pt-BR")}
+          inactiveTintColor={colors.text}
+          activeTintColor={colors.primary}
+          style={[styles.botaoTema, { backgroundColor: colors.surface }]}
+          labelStyle={{ color: colors.text }}
+          icon={() => (
+            <Ionicons
+              name="language"
+              size={22}
+              color={colors.primary}
+            />
+          )}
+        />
+
         <View style={{ flex: 1 }} />
 
         <DrawerItem
-          label="Sair do Sistema"
+          label={t("drawer.logout")}
           onPress={realizarLogout}
           inactiveTintColor={colors.error}
           activeTintColor={colors.error}

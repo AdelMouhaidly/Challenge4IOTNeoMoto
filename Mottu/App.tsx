@@ -23,6 +23,10 @@ import DashboardAlertas from "./src/pages/DashboardAlertas";
 import DetectarMoto from "./src/pages/DetectarMoto";
 import GestaoMotoristas from "./src/pages/GestaoMotoristas";
 import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
+import {
+  LocalizationProvider,
+  useLocalization,
+} from "./src/contexts/LocalizationContext";
 
 const Stack = createNativeStackNavigator<StackLista>();
 const Drawer = createDrawerNavigator<DrawerLista>();
@@ -60,10 +64,12 @@ function BotaoPerfilUsuario() {
 
 function NavegadorComMenuLateral() {
   const { colors } = useTheme();
+  const { t, locale } = useLocalization();
 
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <MenuPersonalizado {...props} />}
+      key={locale}
+      drawerContent={(props) => <MenuPersonalizado {...props} key={locale} />}
       screenOptions={{
         headerLeft: () => <BotaoMenuHamburguer />,
         headerRight: () => <BotaoPerfilUsuario />,
@@ -91,7 +97,7 @@ function NavegadorComMenuLateral() {
         name="Home"
         component={Home}
         options={{
-          title: "Início",
+          title: t("drawer.home"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="home-outline"
@@ -106,7 +112,7 @@ function NavegadorComMenuLateral() {
         name="Patio"
         component={Patio}
         options={{
-          title: "Mapa do Pátio",
+          title: t("drawer.patio"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="map-outline"
@@ -121,7 +127,7 @@ function NavegadorComMenuLateral() {
         name="Cadastro"
         component={CadastroDeMotos}
         options={{
-          title: "Gerenciar Motos",
+          title: t("drawer.bikes"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="bicycle-outline"
@@ -136,7 +142,7 @@ function NavegadorComMenuLateral() {
         name="GestaoMotoristas"
         component={GestaoMotoristas}
         options={{
-          title: "Gerenciar Motoristas",
+          title: t("drawer.drivers"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="people-outline"
@@ -151,7 +157,7 @@ function NavegadorComMenuLateral() {
         name="Alertas"
         component={DashboardAlertas}
         options={{
-          title: "Alertas e Monitoramento",
+          title: t("drawer.alerts"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="warning-outline"
@@ -166,7 +172,7 @@ function NavegadorComMenuLateral() {
         name="DetectarMoto"
         component={DetectarMoto}
         options={{
-          title: "Detecção IA",
+          title: t("drawer.detection"),
           drawerIcon: ({ focused }) => (
             <Ionicons
               name="camera-outline"
@@ -184,16 +190,18 @@ function NavegadorComMenuLateral() {
 export default function AplicativoMottu() {
   return (
     <ThemeProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Register" component={Register} />
-          <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
-          <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
-          <Stack.Screen name="Alertas" component={DashboardAlertas} />
-          <Stack.Screen name="Perfil" component={Perfil} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <LocalizationProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
+            <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
+            <Stack.Screen name="Alertas" component={DashboardAlertas} />
+            <Stack.Screen name="Perfil" component={Perfil} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </LocalizationProvider>
     </ThemeProvider>
   );
 }

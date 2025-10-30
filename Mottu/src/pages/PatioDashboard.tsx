@@ -11,6 +11,7 @@ import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import { Moto, MotoStatus } from "../types/index";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 const LARGURA_PATIO = Dimensions.get("window").width - 40;
 const ALTURA_PATIO = 400;
@@ -55,6 +56,7 @@ export default function PatioDashboard() {
   const [motoSelecionada, setMotoSelecionada] = useState<Moto | null>(null);
   const [mostrarModalDetalhes, setMostrarModalDetalhes] = useState(false);
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   function corDoMarcador(status: MotoStatus) {
     if (status === "em uso") return "#f39c12";
@@ -74,7 +76,7 @@ export default function PatioDashboard() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Mapa Digital do Pátio
+        {t("patio.title")}
       </Text>
 
       <MapView
@@ -108,16 +110,16 @@ export default function PatioDashboard() {
         {motoSelecionada ? (
           <>
             <Text style={[styles.tituloInfo, { color: colors.primary }]}>
-              Detalhes da Moto {motoSelecionada.id}
+              {t("patio.detailsTitle")} {motoSelecionada.id}
             </Text>
             <Text style={{ color: colors.text }}>
-              Nome: {motoSelecionada.name}
+              {t("patio.name")}: {motoSelecionada.name}
             </Text>
             <Text style={{ color: colors.text }}>
-              Status: {motoSelecionada.status}
+              {t("patio.status")}: {motoSelecionada.status}
             </Text>
             <Text style={{ color: colors.text }}>
-              Localização (lat/lng):{" "}
+              {t("patio.location")}:{" "}
               {paraLatitude(motoSelecionada.y).toFixed(6)},{" "}
               {paraLongitude(motoSelecionada.x).toFixed(6)}
             </Text>
@@ -130,7 +132,9 @@ export default function PatioDashboard() {
                 ]}
                 onPress={() => setMostrarModalDetalhes(true)}
               >
-                <Text style={styles.textoBotaoDetalhes}>Ver Detalhes</Text>
+                <Text style={styles.textoBotaoDetalhes}>
+                  {t("common.viewDetails")}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -143,13 +147,13 @@ export default function PatioDashboard() {
                   setMostrarModalDetalhes(false);
                 }}
               >
-                <Text style={styles.textoBotaoFechar}>Fechar</Text>
+                <Text style={styles.textoBotaoFechar}>{t("common.close")}</Text>
               </TouchableOpacity>
             </View>
           </>
         ) : (
           <Text style={[styles.textoInfo, { color: colors.textSecondary }]}>
-            Toque em uma moto para ver detalhes
+            {t("patio.tapForDetails")}
           </Text>
         )}
       </View>
@@ -165,13 +169,13 @@ export default function PatioDashboard() {
             style={[styles.containerModal, { backgroundColor: colors.surface }]}
           >
             <Text style={[styles.tituloModal, { color: colors.primary }]}>
-              Informações da Moto
+              {t("patio.bikeInfo")}
             </Text>
             <Text style={{ color: colors.text }}>
-              Marca: {motoSelecionada?.marca}
+              {t("patio.brand")}: {motoSelecionada?.marca}
             </Text>
             <Text style={{ color: colors.text }}>
-              Configurações: {motoSelecionada?.configuracoes}
+              {t("patio.configurations")}: {motoSelecionada?.configuracoes}
             </Text>
 
             <TouchableOpacity
@@ -185,7 +189,7 @@ export default function PatioDashboard() {
                 },
               ]}
             >
-              <Text style={styles.textoBotaoFechar}>Fechar Detalhes</Text>
+              <Text style={styles.textoBotaoFechar}>{t("common.close")}</Text>
             </TouchableOpacity>
           </View>
         </View>

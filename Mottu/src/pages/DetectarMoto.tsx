@@ -10,16 +10,18 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   const selecionarImagem = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permissão necessária", "Permita acesso à galeria.");
+      Alert.alert(t("detection.errorTitle"), t("detection.errorPermission"));
       return;
     }
 
@@ -38,7 +40,7 @@ export default function DetectarMoto() {
 
   const enviarImagem = async () => {
     if (!imageUri) {
-      Alert.alert("Erro", "Por favor, selecione uma imagem antes de enviar.");
+      Alert.alert(t("detection.errorTitle"), t("detection.errorNoImage"));
       return;
     }
 
@@ -62,7 +64,7 @@ export default function DetectarMoto() {
       setResultado(data);
     } catch (error) {
       console.error("Erro ao enviar imagem:", error);
-      Alert.alert("Erro", "Não foi possível conectar à API.");
+      Alert.alert(t("detection.errorTitle"), t("detection.errorDetection"));
     }
   };
 
@@ -74,14 +76,14 @@ export default function DetectarMoto() {
       ]}
     >
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Detecção de Motos
+        {t("detection.title")}
       </Text>
 
       <TouchableOpacity
         style={[styles.botao, { backgroundColor: colors.primary }]}
         onPress={selecionarImagem}
       >
-        <Text style={styles.textoBotao}>Selecionar Imagem</Text>
+        <Text style={styles.textoBotao}>{t("detection.selectImage")}</Text>
       </TouchableOpacity>
 
       {imageUri && (
@@ -95,7 +97,7 @@ export default function DetectarMoto() {
             style={[styles.botao, { backgroundColor: colors.success }]}
             onPress={enviarImagem}
           >
-            <Text style={styles.textoBotao}>Enviar para API</Text>
+            <Text style={styles.textoBotao}>{t("detection.detect")}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -108,18 +110,16 @@ export default function DetectarMoto() {
           ]}
         >
           <Text style={[styles.resultadoTitulo, { color: colors.primary }]}>
-            Resultado da Detecção:
+            {t("detection.detectionResult")}:
           </Text>
 
           {resultado.motos_detectadas.length > 0 ? (
             <Text style={[styles.mensagemSucesso, { color: colors.success }]}>
-              {" "}
-              Moto detectada na imagem!
+              {t("detection.bikeDetected")}
             </Text>
           ) : (
             <Text style={[styles.mensagemErro, { color: colors.error }]}>
-              {" "}
-              Nenhuma moto detectada na imagem.
+              {t("detection.noBikesDetected")}
             </Text>
           )}
 

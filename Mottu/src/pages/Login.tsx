@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 const { width } = Dimensions.get("window");
 
@@ -20,19 +21,34 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const { colors, toggleTheme, isDark } = useTheme();
+  const { t } = useLocalization();
 
   const realizarLogin = async () => {
-    const usuarioArmazenado = await AsyncStorage.getItem("user");
-    if (usuarioArmazenado) {
-      const usuario = JSON.parse(usuarioArmazenado);
-      if (usuario.email === email && usuario.senha === senha) {
-        navigation.replace("DrawerRoot");
-      } else {
-        Alert.alert("Erro", "Email ou senha incorretos.");
-      }
-    } else {
-      Alert.alert("Erro", "Usuário não encontrado.");
+    if (!email.trim() || !senha.trim()) {
+      Alert.alert(t("login.errorTitle"), t("login.errorEmptyFields"));
+      return;
     }
+
+    const usuarioArmazenado = await AsyncStorage.getItem("user");
+    
+    if (!usuarioArmazenado) {
+      Alert.alert(t("login.errorTitle"), t("login.errorUserNotFound"));
+      return;
+    }
+
+    const usuario = JSON.parse(usuarioArmazenado);
+
+    if (usuario.email !== email) {
+      Alert.alert(t("login.errorTitle"), t("login.errorInvalidEmail"));
+      return;
+    }
+
+    if (usuario.senha !== senha) {
+      Alert.alert(t("login.errorTitle"), t("login.errorInvalidPassword"));
+      return;
+    }
+
+    navigation.replace("DrawerRoot");
   };
 
   return (
@@ -44,10 +60,12 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
       />
 
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Bem-vindo de volta!
+        {t("login.title")}
       </Text>
 
-      <Text style={[styles.etiqueta, { color: colors.primary }]}>Email</Text>
+      <Text style={[styles.etiqueta, { color: colors.primary }]}>
+        {t("login.email")}
+      </Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -59,19 +77,21 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
             color: colors.text,
           },
         ]}
-        placeholder="Digite seu e-mail"
+        placeholder={t("login.emailPlaceholder")}
         placeholderTextColor={colors.textSecondary}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
       />
 
-      <Text style={[styles.etiqueta, { color: colors.primary }]}>Senha</Text>
+      <Text style={[styles.etiqueta, { color: colors.primary }]}>
+        {t("login.password")}
+      </Text>
       <TextInput
         value={senha}
         onChangeText={setSenha}
         secureTextEntry
-        placeholder="Digite sua senha"
+        placeholder={t("login.passwordPlaceholder")}
         placeholderTextColor={colors.textSecondary}
         style={[
           styles.entrada,
@@ -89,7 +109,7 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
         style={[styles.botao, { backgroundColor: colors.success }]}
         onPress={realizarLogin}
       >
-        <Text style={styles.textoBotao}>Entrar</Text>
+        <Text style={styles.textoBotao}>{t("login.loginButton")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -104,7 +124,7 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
         onPress={() => navigation.navigate("Register")}
       >
         <Text style={[styles.textoBotaoSecundario, { color: colors.success }]}>
-          Criar conta
+          {t("login.register")}
         </Text>
       </TouchableOpacity>
 

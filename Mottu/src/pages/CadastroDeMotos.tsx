@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { useLocalization } from "../contexts/LocalizationContext";
 
 export type MotoStatus = "parada" | "em uso" | "aguardando";
 
@@ -36,6 +37,7 @@ export default function CadastroDeMotos() {
   const [motoEditando, setMotoEditando] = useState<Moto | null>(null);
   const [loading, setLoading] = useState(false);
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   useEffect(() => {
     carregarMotos();
@@ -49,11 +51,11 @@ export default function CadastroDeMotos() {
         const data = await response.json();
         setMotos(data);
       } else {
-        Alert.alert("Erro", "Não foi possível carregar as motos");
+        Alert.alert(t("bikes.errorTitle"), t("bikes.errorLoad"));
       }
     } catch (error) {
       console.error("Erro ao carregar motos:", error);
-      Alert.alert("Erro", "Erro de conexão com a API. Funcionando offline.");
+      Alert.alert(t("bikes.errorTitle"), t("bikes.errorLoad"));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function CadastroDeMotos() {
 
   const cadastrarMoto = async () => {
     if (!nome || !marca || !configuracoes) {
-      Alert.alert("Erro", "Preencha todos os campos!");
+      Alert.alert(t("bikes.errorTitle"), t("bikes.errorEmptyFields"));
       return;
     }
 
@@ -90,18 +92,15 @@ export default function CadastroDeMotos() {
         setNome("");
         setMarca("");
         setConfiguracoes("");
-        Alert.alert("Sucesso", "Moto cadastrada com sucesso!");
+        Alert.alert(t("common.success"), t("bikes.successCreate"));
       } else {
         const errorData = await response.text();
         console.error("Erro da API:", errorData);
-        Alert.alert(
-          "Erro",
-          `Não foi possível cadastrar a moto: ${response.status}`
-        );
+        Alert.alert(t("bikes.errorTitle"), t("bikes.errorCreate"));
       }
     } catch (error) {
       console.error("Erro ao cadastrar moto:", error);
-      Alert.alert("Erro", "Erro de conexão com a API. Moto salva localmente.");
+      Alert.alert(t("bikes.errorTitle"), t("bikes.errorCreate"));
 
       const motoLocal: Moto = {
         id: Date.now(),
@@ -138,7 +137,7 @@ export default function CadastroDeMotos() {
 
   const salvarEdicaoMoto = async () => {
     if (!nome || !marca || !configuracoes || !motoEditando) {
-      Alert.alert("Erro", "Preencha todos os campos!");
+      Alert.alert(t("bikes.errorTitle"), t("bikes.errorEmptyFields"));
       return;
     }
 
@@ -168,28 +167,25 @@ export default function CadastroDeMotos() {
         );
         setModalEdicaoVisivel(false);
         limparFormulario();
-        Alert.alert("Sucesso", "Moto atualizada com sucesso!");
+        Alert.alert(t("common.success"), t("bikes.successUpdate"));
       } else {
         const errorData = await response.text();
         console.error("Erro da API:", errorData);
-        Alert.alert(
-          "Erro",
-          `Não foi possível atualizar a moto: ${response.status}`
-        );
+        Alert.alert(t("bikes.errorTitle"), t("bikes.errorUpdate"));
       }
     } catch (error) {
       console.error("Erro ao atualizar moto:", error);
-      Alert.alert("Erro", "Erro de conexão com a API. Tente novamente.");
+      Alert.alert(t("bikes.errorTitle"), t("bikes.errorUpdate"));
     } finally {
       setLoading(false);
     }
   };
 
   const excluirMoto = async (id: number) => {
-    Alert.alert("Excluir", "Deseja excluir essa moto?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
+    Alert.alert(t("bikes.confirmDelete"), t("bikes.confirmDeleteMessage"), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           setLoading(true);
@@ -200,16 +196,13 @@ export default function CadastroDeMotos() {
 
             if (response.ok) {
               setMotos((prev) => prev.filter((moto) => moto.id !== id));
-              Alert.alert("Sucesso", "Moto excluída com sucesso!");
+              Alert.alert(t("common.success"), t("bikes.successDelete"));
             } else {
-              Alert.alert("Erro", "Não foi possível excluir a moto");
+              Alert.alert(t("bikes.errorTitle"), t("bikes.errorDelete"));
             }
           } catch (error) {
             console.error("Erro ao excluir moto:", error);
-            Alert.alert(
-              "Erro",
-              "Erro de conexão com a API. Excluída localmente."
-            );
+            Alert.alert(t("bikes.errorTitle"), t("bikes.errorDelete"));
             setMotos((prev) => prev.filter((moto) => moto.id !== id));
           } finally {
             setLoading(false);
@@ -242,7 +235,7 @@ export default function CadastroDeMotos() {
             onPress={() => abrirModalEdicao(item)}
             disabled={loading}
           >
-            <Text style={styles.textoBotaoAcao}>Editar</Text>
+            <Text style={styles.textoBotaoAcao}>{t("common.edit")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.botaoExcluir}
@@ -250,7 +243,7 @@ export default function CadastroDeMotos() {
             disabled={loading}
           >
             <Text style={styles.textoBotaoExcluir}>
-              {loading ? "..." : "Excluir"}
+              {loading ? "..." : t("common.delete")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -261,7 +254,7 @@ export default function CadastroDeMotos() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.titulo, { color: colors.primary }]}>
-        Cadastro de Moto
+        {t("bikes.title")}
       </Text>
 
       <TextInput
@@ -273,7 +266,7 @@ export default function CadastroDeMotos() {
             color: colors.text,
           },
         ]}
-        placeholder="Nome da moto"
+        placeholder={t("bikes.namePlaceholder")}
         placeholderTextColor={colors.textSecondary}
         value={nome}
         onChangeText={setNome}
@@ -287,7 +280,7 @@ export default function CadastroDeMotos() {
             color: colors.text,
           },
         ]}
-        placeholder="Marca"
+        placeholder={t("bikes.brandPlaceholder")}
         placeholderTextColor={colors.textSecondary}
         value={marca}
         onChangeText={setMarca}
@@ -301,7 +294,7 @@ export default function CadastroDeMotos() {
             color: colors.text,
           },
         ]}
-        placeholder="Configurações"
+        placeholder={t("bikes.settingsPlaceholder")}
         placeholderTextColor={colors.textSecondary}
         value={configuracoes}
         onChangeText={setConfiguracoes}
@@ -315,7 +308,7 @@ export default function CadastroDeMotos() {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.textoBotao}>Cadastrar Moto</Text>
+          <Text style={styles.textoBotao}>{t("bikes.addBike")}</Text>
         )}
       </TouchableOpacity>
 
@@ -332,7 +325,7 @@ export default function CadastroDeMotos() {
         onPress={() => setModalVisivel(true)}
       >
         <Text style={[styles.textoBotao, { color: "#228B22" }]}>
-          Ver Histórico
+          {t("bikes.title")}
         </Text>
       </TouchableOpacity>
 
@@ -409,7 +402,7 @@ export default function CadastroDeMotos() {
                 color: colors.text,
               },
             ]}
-            placeholder="Nome da moto"
+            placeholder={t("bikes.namePlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={nome}
             onChangeText={setNome}
@@ -423,7 +416,7 @@ export default function CadastroDeMotos() {
                 color: colors.text,
               },
             ]}
-            placeholder="Marca"
+            placeholder={t("bikes.brandPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={marca}
             onChangeText={setMarca}
@@ -437,7 +430,7 @@ export default function CadastroDeMotos() {
                 color: colors.text,
               },
             ]}
-            placeholder="Configurações"
+            placeholder={t("bikes.settingsPlaceholder")}
             placeholderTextColor={colors.textSecondary}
             value={configuracoes}
             onChangeText={setConfiguracoes}
