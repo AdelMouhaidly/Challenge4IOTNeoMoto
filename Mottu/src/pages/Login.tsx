@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 const { width } = Dimensions.get("window");
 
@@ -22,6 +23,7 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
   const [senha, setSenha] = useState("");
   const { colors, toggleTheme, isDark } = useTheme();
   const { t } = useLocalization();
+  const { sendLocalNotification } = useNotification();
 
   const realizarLogin = async () => {
     if (!email.trim() || !senha.trim()) {
@@ -48,6 +50,11 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
       return;
     }
 
+    await sendLocalNotification(
+      t("notifications.welcome"),
+      t("notifications.welcomeBody")
+    );
+    
     navigation.replace("DrawerRoot");
   };
 

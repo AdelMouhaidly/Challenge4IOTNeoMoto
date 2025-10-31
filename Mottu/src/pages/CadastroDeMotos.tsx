@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 export type MotoStatus = "parada" | "em uso" | "aguardando";
 
@@ -38,6 +39,7 @@ export default function CadastroDeMotos() {
   const [loading, setLoading] = useState(false);
   const { colors } = useTheme();
   const { t } = useLocalization();
+  const { sendLocalNotification } = useNotification();
 
   useEffect(() => {
     carregarMotos();
@@ -93,6 +95,10 @@ export default function CadastroDeMotos() {
         setMarca("");
         setConfiguracoes("");
         Alert.alert(t("common.success"), t("bikes.successCreate"));
+        await sendLocalNotification(
+          t("notifications.newBike"),
+          `${motoSalva.name} ${t("notifications.newBikeBody")}`
+        );
       } else {
         const errorData = await response.text();
         console.error("Erro da API:", errorData);
@@ -168,6 +174,10 @@ export default function CadastroDeMotos() {
         setModalEdicaoVisivel(false);
         limparFormulario();
         Alert.alert(t("common.success"), t("bikes.successUpdate"));
+        await sendLocalNotification(
+          t("notifications.bikeUpdated"),
+          `${motoSalva.name} ${t("notifications.bikeUpdatedBody")}`
+        );
       } else {
         const errorData = await response.text();
         console.error("Erro da API:", errorData);
@@ -182,6 +192,9 @@ export default function CadastroDeMotos() {
   };
 
   const excluirMoto = async (id: number) => {
+    const motoParaExcluir = motos.find((m) => m.id === id);
+    const nomeMoto = motoParaExcluir?.name || "Moto";
+    
     Alert.alert(t("bikes.confirmDelete"), t("bikes.confirmDeleteMessage"), [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -197,6 +210,10 @@ export default function CadastroDeMotos() {
             if (response.ok) {
               setMotos((prev) => prev.filter((moto) => moto.id !== id));
               Alert.alert(t("common.success"), t("bikes.successDelete"));
+              await sendLocalNotification(
+                t("notifications.bikeDeleted"),
+                `${nomeMoto} ${t("notifications.bikeDeletedBody")}`
+              );
             } else {
               Alert.alert(t("bikes.errorTitle"), t("bikes.errorDelete"));
             }

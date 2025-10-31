@@ -22,11 +22,14 @@ import { StackLista, DrawerLista } from "./src/types/index";
 import DashboardAlertas from "./src/pages/DashboardAlertas";
 import DetectarMoto from "./src/pages/DetectarMoto";
 import GestaoMotoristas from "./src/pages/GestaoMotoristas";
+import SobreApp from "./src/pages/SobreApp";
 import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import {
   LocalizationProvider,
   useLocalization,
 } from "./src/contexts/LocalizationContext";
+import { NotificationProvider, useNotification } from "./src/contexts/NotificationContext";
+import NotificationBanner from "./src/components/NotificationBanner";
 
 const Stack = createNativeStackNavigator<StackLista>();
 const Drawer = createDrawerNavigator<DrawerLista>();
@@ -183,7 +186,47 @@ function NavegadorComMenuLateral() {
           drawerLabelStyle: { color: colors.text },
         }}
       />
+      <Drawer.Screen
+        name="SobreApp"
+        component={SobreApp}
+        options={{
+          title: t("drawer.about"),
+          drawerIcon: ({ focused }) => (
+            <Ionicons
+              name="information-circle-outline"
+              size={24}
+              color={focused ? colors.primary : colors.textSecondary}
+            />
+          ),
+          drawerLabelStyle: { color: colors.text },
+        }}
+      />
     </Drawer.Navigator>
+  );
+}
+
+function AppContent() {
+  const { notification, hideNotification } = useNotification();
+  
+  return (
+    <>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
+          <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
+          <Stack.Screen name="Alertas" component={DashboardAlertas} />
+          <Stack.Screen name="Perfil" component={Perfil} />
+        </Stack.Navigator>
+      </NavigationContainer>
+      <NotificationBanner
+        title={notification.title}
+        body={notification.body}
+        visible={notification.visible}
+        onHide={hideNotification}
+      />
+    </>
   );
 }
 
@@ -191,16 +234,9 @@ export default function AplicativoMottu() {
   return (
     <ThemeProvider>
       <LocalizationProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Register" component={Register} />
-            <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
-            <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
-            <Stack.Screen name="Alertas" component={DashboardAlertas} />
-            <Stack.Screen name="Perfil" component={Perfil} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

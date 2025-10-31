@@ -13,6 +13,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 export type Motorista = {
   id: number;
@@ -55,6 +56,7 @@ export default function GestaoMotoristas() {
   );
   const { colors } = useTheme();
   const { t } = useLocalization();
+  const { sendLocalNotification } = useNotification();
 
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -201,6 +203,10 @@ export default function GestaoMotoristas() {
           t("common.success"),
           motoristaEditando ? t("drivers.successUpdate") : t("drivers.successCreate")
         );
+        await sendLocalNotification(
+          motoristaEditando ? t("notifications.driverUpdated") : t("notifications.newDriver"),
+          `${nome} ${motoristaEditando ? t("notifications.driverUpdatedBody") : t("notifications.newDriverBody")}`
+        );
         setModalCadastroVisivel(false);
         limparFormulario();
         carregarMotoristas();
@@ -216,6 +222,9 @@ export default function GestaoMotoristas() {
   };
 
   const excluirMotorista = async (id: number) => {
+    const motoristaParaExcluir = motoristas.find((m) => m.id === id);
+    const nomeMotorista = motoristaParaExcluir?.nome || "Motorista";
+    
     Alert.alert(
       t("drivers.confirmDelete"),
       t("drivers.confirmDeleteMessage"),
@@ -233,6 +242,10 @@ export default function GestaoMotoristas() {
 
               if (response.ok) {
                 Alert.alert(t("common.success"), t("drivers.successDelete"));
+                await sendLocalNotification(
+                  t("notifications.driverDeleted"),
+                  `${nomeMotorista} ${t("notifications.driverDeletedBody")}`
+                );
                 carregarMotoristas();
               } else {
                 Alert.alert(t("drivers.errorTitle"), t("drivers.errorDelete"));
