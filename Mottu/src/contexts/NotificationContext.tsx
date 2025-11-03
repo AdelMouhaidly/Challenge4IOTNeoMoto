@@ -54,7 +54,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log("Notificação clicada:", response);
+      return;
     });
 
     return () => {
@@ -68,26 +68,25 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   const setupNotifications = async () => {
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "Mottu Notifications",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF5722",
-        sound: "default",
-      });
-    }
+    try {
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "Mottu Notifications",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF5722",
+          sound: "default",
+        });
+      }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== "granted") {
-      console.log("Permissão para notificações locais não concedida");
+      if (existingStatus !== "granted") {
+        await Notifications.requestPermissionsAsync();
+      }
+    } catch (error) {
+      return;
     }
   };
 
@@ -110,7 +109,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         visible: true,
       });
     } catch (error) {
-      console.log("Erro ao enviar notificação:", error);
+      return;
     }
   };
 
@@ -129,7 +128,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         },
       });
     } catch (error) {
-      console.log("Erro ao agendar notificação:", error);
+      return;
     }
   };
 

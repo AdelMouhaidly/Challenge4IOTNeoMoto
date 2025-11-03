@@ -7,14 +7,26 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 
+const getApiUrl = () => {
+  if (Platform.OS === "android") {
+    return "http://10.0.2.2:8000/detectar-moto";
+  } else if (Platform.OS === "ios") {
+    return "http://localhost:8000/detectar-moto";
+  }
+  return "http://192.168.15.5:8000/detectar-moto";
+};
+
 export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const { colors } = useTheme();
   const { t } = useLocalization();
 
@@ -44,6 +56,9 @@ export default function DetectarMoto() {
       return;
     }
 
+    setLoading(true);
+    setResultado(null);
+
     const formData = new FormData();
     formData.append("file", {
       uri: imageUri,
@@ -52,19 +67,34 @@ export default function DetectarMoto() {
     } as any);
 
     try {
-      const response = await fetch("http://192.168.15.7:8000/detectar-moto", {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      const response = await fetch(getApiUrl(), {
         method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
         body: formData,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("Erro da API:", errorData);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       setResultado(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao enviar imagem:", error);
-      Alert.alert(t("detection.errorTitle"), t("detection.errorDetection"));
+      if (error.name === "AbortError") {
+        Alert.alert(t("detection.errorTitle"), t("detection.errorTimeout"));
+      } else {
+        Alert.alert(t("detection.errorTitle"), t("detection.errorDetection"));
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,10 +124,22 @@ export default function DetectarMoto() {
           />
 
           <TouchableOpacity
-            style={[styles.botao, { backgroundColor: colors.success }]}
+            style={[
+              styles.botao,
+              {
+                backgroundColor: loading
+                  ? colors.textSecondary
+                  : colors.success,
+              },
+            ]}
             onPress={enviarImagem}
+            disabled={loading}
           >
-            <Text style={styles.textoBotao}>{t("detection.detect")}</Text>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.textoBotao}>{t("detection.detect")}</Text>
+            )}
           </TouchableOpacity>
         </>
       )}

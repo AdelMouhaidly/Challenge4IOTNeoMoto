@@ -194,11 +194,11 @@ export default function CadastroDeMotos() {
   const excluirMoto = async (id: number) => {
     const motoParaExcluir = motos.find((m) => m.id === id);
     const nomeMoto = motoParaExcluir?.name || "Moto";
-    
+
     Alert.alert(t("bikes.confirmDelete"), t("bikes.confirmDeleteMessage"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("common.delete"),
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           setLoading(true);
@@ -342,7 +342,7 @@ export default function CadastroDeMotos() {
         onPress={() => setModalVisivel(true)}
       >
         <Text style={[styles.textoBotao, { color: "#228B22" }]}>
-          {t("bikes.title")}
+          {t("bikes.viewHistory")}
         </Text>
       </TouchableOpacity>
 
@@ -358,7 +358,7 @@ export default function CadastroDeMotos() {
           ]}
         >
           <Text style={[styles.tituloModal, { color: colors.primary }]}>
-            Histórico de Motos Cadastradas
+            {t("bikes.history")}
           </Text>
           {loading ? (
             <ActivityIndicator
@@ -370,7 +370,7 @@ export default function CadastroDeMotos() {
             <Text
               style={[styles.nenhumaReserva, { color: colors.textSecondary }]}
             >
-              Nenhuma moto cadastrada.
+              {t("bikes.noBikes")}
             </Text>
           ) : (
             <FlatList
@@ -387,7 +387,7 @@ export default function CadastroDeMotos() {
             ]}
             onPress={() => setModalVisivel(false)}
           >
-            <Text style={styles.textoBotao}>Fechar</Text>
+            <Text style={styles.textoBotao}>{t("bikes.close")}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -407,7 +407,7 @@ export default function CadastroDeMotos() {
           ]}
         >
           <Text style={[styles.tituloModal, { color: colors.primary }]}>
-            Editar Moto
+            {t("bikes.editBike")}
           </Text>
 
           <TextInput

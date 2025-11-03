@@ -79,7 +79,7 @@ export default function Perfil({ navigation }: Props) {
           style: "cancel",
         },
         {
-          text: "Excluir",
+          text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
             await AsyncStorage.removeItem("user");
@@ -99,27 +99,34 @@ export default function Perfil({ navigation }: Props) {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={[styles.header, { backgroundColor: colors.header }]}>
-        <View
-          style={[styles.avatarContainer, { backgroundColor: colors.surface }]}
-        >
-          <Image
-            source={require("../assets/avatar.jpg")}
-            style={styles.avatar}
-          />
-        </View>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={[styles.topBar, { backgroundColor: colors.header }]}>
+        <TouchableOpacity onPress={voltar} style={styles.backIconButton}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.header, { backgroundColor: colors.header }]}>
+          <View
+            style={[styles.avatarContainer, { backgroundColor: colors.surface }]}
+          >
+            <Image
+              source={require("../assets/avatar.jpg")}
+              style={styles.avatar}
+            />
+          </View>
         <Text style={[styles.welcomeText, { color: "#fff" }]}>
-          Olá, {nome || "Usuário"}!
+          {t("profile.hello")}, {nome || t("profile.user")}!
         </Text>
         <Text style={[styles.subtitleText, { color: "#E0E0E0" }]}>
-          Gerencie suas informações pessoais
+          {t("profile.manageInfo")}
         </Text>
-      </View>
+        </View>
 
       <View
         style={[
@@ -132,13 +139,13 @@ export default function Perfil({ navigation }: Props) {
       >
         <Text style={[styles.cardTitle, { color: colors.primary }]}>
           <Ionicons name="person-outline" size={20} color={colors.primary} />{" "}
-          Informações Pessoais
+          {t("profile.personalInfo")}
         </Text>
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="person" size={16} color={colors.primary} /> Nome
-            Completo
+            <Ionicons name="person" size={16} color={colors.primary} />{" "}
+            {t("profile.fullName")}
           </Text>
           <View
             style={[
@@ -153,7 +160,7 @@ export default function Perfil({ navigation }: Props) {
               value={nome}
               onChangeText={setNome}
               style={[styles.input, { color: colors.text }]}
-              placeholder="Digite seu nome completo"
+              placeholder={t("profile.namePlaceholder")}
               placeholderTextColor={colors.textSecondary}
             />
           </View>
@@ -161,7 +168,8 @@ export default function Perfil({ navigation }: Props) {
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="mail" size={16} color={colors.primary} /> Email
+            <Ionicons name="mail" size={16} color={colors.primary} />{" "}
+            {t("profile.email")}
           </Text>
           <View
             style={[
@@ -177,7 +185,7 @@ export default function Perfil({ navigation }: Props) {
               onChangeText={setEmail}
               style={[styles.input, { color: colors.text }]}
               keyboardType="email-address"
-              placeholder="Digite seu email"
+              placeholder={t("profile.emailPlaceholder")}
               placeholderTextColor={colors.textSecondary}
               autoCapitalize="none"
             />
@@ -187,7 +195,7 @@ export default function Perfil({ navigation }: Props) {
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
             <Ionicons name="lock-closed" size={16} color={colors.primary} />{" "}
-            Senha
+            {t("profile.password")}
           </Text>
 
           {!mostrarNovoInputSenha ? (
@@ -211,7 +219,9 @@ export default function Perfil({ navigation }: Props) {
                 ]}
               >
                 <Ionicons name="pencil" size={16} color="#fff" />
-                <Text style={styles.alterarSenhaText}>Alterar</Text>
+                <Text style={styles.alterarSenhaText}>
+                  {t("profile.change")}
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -229,7 +239,7 @@ export default function Perfil({ navigation }: Props) {
                 onChangeText={setNovaSenha}
                 style={[styles.input, { color: colors.text }]}
                 secureTextEntry={!mostrarSenha}
-                placeholder="Digite a nova senha"
+                placeholder={t("profile.newPasswordPlaceholder")}
                 placeholderTextColor={colors.textSecondary}
                 autoCapitalize="none"
               />
@@ -307,7 +317,9 @@ export default function Perfil({ navigation }: Props) {
           ) : (
             <>
               <Ionicons name="save-outline" size={20} color="#fff" />
-              <Text style={styles.primaryButtonText}>Salvar Alterações</Text>
+              <Text style={styles.primaryButtonText}>
+                {t("profile.saveChanges")}
+              </Text>
             </>
           )}
         </TouchableOpacity>
@@ -317,27 +329,27 @@ export default function Perfil({ navigation }: Props) {
           onPress={excluirConta}
         >
           <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.dangerButtonText}>Excluir Conta</Text>
+          <Text style={styles.dangerButtonText}>
+            {t("profile.deleteAccount")}
+          </Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={[
-          styles.backButton,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-        onPress={voltar}
-      >
-        <Ionicons name="arrow-back" size={20} color={colors.primary} />
-        <Text style={[styles.backButtonText, { color: colors.primary }]}>
-          Voltar
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  topBar: {
+    paddingTop: 40,
+    paddingBottom: 10,
+    paddingHorizontal: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backIconButton: {
+    padding: 5,
+  },
   container: {
     flex: 1,
   },
@@ -346,7 +358,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -506,26 +518,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    marginTop: 20,
-    paddingVertical: 15,
-    borderRadius: 15,
-    borderWidth: 1.5,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
   },
   languageButton: {
     flex: 1,
