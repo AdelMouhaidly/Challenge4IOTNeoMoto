@@ -1,2 +1,3 @@
-web: java -Dserver.port=$PORT -jar build/libs/neomoto-0.0.1.jar
+# Procfile não é necessário quando usando Docker
+# O Dockerfile será usado automaticamente
 
