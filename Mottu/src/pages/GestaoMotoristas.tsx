@@ -212,7 +212,7 @@ export default function GestaoMotoristas() {
         limparFormulario();
         carregarMotoristas();
       } else {
-        Alert.alert(t("drivers.errorTitle"), motorista ? t("drivers.errorUpdate") : t("drivers.errorCreate"));
+        Alert.alert(t("drivers.errorTitle"), motoristaEditando ? t("drivers.errorUpdate") : t("drivers.errorCreate"));
       }
     } catch (error) {
       console.error("Erro ao salvar motorista:", error);

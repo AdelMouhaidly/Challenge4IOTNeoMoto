@@ -29,4 +29,5 @@ export type DrawerLista = {
   DetectarMoto: undefined;
   GestaoMotoristas: undefined;
   Historico: undefined;
+  SobreApp: undefined;
 };

@@ -40,7 +40,8 @@
           "color": "#FF5722",
           "sounds": []
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
