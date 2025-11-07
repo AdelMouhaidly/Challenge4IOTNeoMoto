@@ -6,9 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "extra": {
-      "commitHash": "543612a"
+      "commitHash": "543612a",
+      "eas": {
+        "projectId": "35641084-9b83-45c7-8024-fe09d5b06813"
+      }
     },
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -26,7 +29,8 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
-      ]
+      ],
+      "package": "com.adelmouhaidly.Mottu"
     },
     "plugins": [
       [
