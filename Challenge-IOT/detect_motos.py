@@ -1,11 +1,23 @@
 import cv2
 import numpy as np
+import os
 from ultralytics import YOLO
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict
 
 app = FastAPI()
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 model = YOLO('yolov8n.pt')
 
 @app.post("/detectar-moto")
@@ -38,3 +50,8 @@ async def detectar_moto(file: UploadFile = File(...)) -> Dict:
     
     except Exception as e:
         return {"erro": str(e)}
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

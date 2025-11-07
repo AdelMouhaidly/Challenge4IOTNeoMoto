@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: mottu-java-api
+    env: java
+    buildCommand: ./gradlew build -x test
+    startCommand: java -jar build/libs/*.jar
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+
