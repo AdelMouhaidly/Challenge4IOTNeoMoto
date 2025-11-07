@@ -12,8 +12,8 @@ COPY src ./src
 # Construir o projeto
 RUN gradle build -x test --no-daemon
 
-# Imagem final
-FROM openjdk:17-jdk-slim
+# Imagem final - usando Eclipse Temurin (OpenJDK oficial)
+FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
