@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "extra": {
-      "commitHash": "543612a",
+      "commitHash": "21fd1a6",
       "eas": {
         "projectId": "35641084-9b83-45c7-8024-fe09d5b06813"
       }
@@ -41,7 +41,8 @@
           "sounds": []
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-asset"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { I18n } from "i18n-js";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,7 +57,11 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({
         setLocaleState(savedLocale);
         i18n.locale = savedLocale;
       } else {
-        const deviceLocale = Localization.getLocales()[0]?.languageTag || "pt-BR";
+        const locales = Localization.getLocales();
+        const deviceLocale =
+          locales && locales.length > 0
+            ? locales[0].languageTag || locales[0].languageCode
+            : "pt-BR";
         const defaultLocale = deviceLocale.startsWith("es") ? "es" : "pt-BR";
         setLocaleState(defaultLocale);
         i18n.locale = defaultLocale;
@@ -90,4 +100,3 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({
     </LocalizationContext.Provider>
   );
 };
-
