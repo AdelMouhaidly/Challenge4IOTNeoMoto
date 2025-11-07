@@ -7,7 +7,7 @@ import {
 } from "@react-navigation/drawer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Sun, Moon, Languages, LogOut } from "lucide-react-native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackLista } from "../types/index";
 import { useTheme } from "../contexts/ThemeContext";
@@ -94,11 +94,11 @@ export default function MenuPersonalizado(props: any) {
           style={[styles.botaoTema, { backgroundColor: colors.surface }]}
           labelStyle={{ color: colors.text }}
           icon={() => (
-            <Ionicons
-              name={isDark ? "sunny" : "moon"}
-              size={22}
-              color={colors.primary}
-            />
+            isDark ? (
+              <Sun size={22} color={colors.primary} />
+            ) : (
+              <Moon size={22} color={colors.primary} />
+            )
           )}
         />
 
@@ -110,11 +110,7 @@ export default function MenuPersonalizado(props: any) {
           style={[styles.botaoTema, { backgroundColor: colors.surface }]}
           labelStyle={{ color: colors.text }}
           icon={() => (
-            <Ionicons
-              name="language"
-              size={22}
-              color={colors.primary}
-            />
+            <Languages size={22} color={colors.primary} />
           )}
         />
 
@@ -128,7 +124,7 @@ export default function MenuPersonalizado(props: any) {
           style={[styles.botaoSair, { borderTopColor: colors.border }]}
           labelStyle={{ color: colors.error }}
           icon={() => (
-            <Ionicons name="log-out-outline" size={22} color={colors.error} />
+            <LogOut size={22} color={colors.error} />
           )}
         />
       </DrawerContentScrollView>

@@ -1,0 +1,23 @@
+﻿# Expo
+.expo/
+**/.expo/
+
+# Native folders
+Mottu/android/
+Mottu/ios/
+**/android/
+**/ios/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+web-build/
+**/web-build/
+
+# Expo
+expo-env.d.ts
+**/expo-env.d.ts

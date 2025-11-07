@@ -8,7 +8,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { Ionicons } from "@expo/vector-icons";
+import { Menu, Home as HomeIcon, MapPin, Bike, Users, AlertTriangle, Camera, Info } from "lucide-react-native";
 
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
@@ -28,8 +28,7 @@ import {
   LocalizationProvider,
   useLocalization,
 } from "./src/contexts/LocalizationContext";
-import { NotificationProvider, useNotification } from "./src/contexts/NotificationContext";
-import NotificationBanner from "./src/components/NotificationBanner";
+import { NotificationProvider } from "./src/contexts/NotificationContext";
 
 const Stack = createNativeStackNavigator<StackLista>();
 const Drawer = createDrawerNavigator<DrawerLista>();
@@ -43,7 +42,7 @@ function BotaoMenuHamburguer() {
 
   return (
     <TouchableOpacity onPress={alternarMenuLateral} style={estilos.botaoMenu}>
-      <Ionicons name="menu" size={28} color="#fff" />
+      <Menu size={28} color="#fff" />
     </TouchableOpacity>
   );
 }
@@ -102,8 +101,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.home"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="home-outline"
+            <HomeIcon
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -117,8 +115,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.patio"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="map-outline"
+            <MapPin
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -132,8 +129,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.bikes"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="bicycle-outline"
+            <Bike
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -147,8 +143,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.drivers"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="people-outline"
+            <Users
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -162,8 +157,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.alerts"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="warning-outline"
+            <AlertTriangle
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -177,8 +171,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.detection"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="camera-outline"
+            <Camera
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -192,8 +185,7 @@ function NavegadorComMenuLateral() {
         options={{
           title: t("drawer.about"),
           drawerIcon: ({ focused }) => (
-            <Ionicons
-              name="information-circle-outline"
+            <Info
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
@@ -206,27 +198,17 @@ function NavegadorComMenuLateral() {
 }
 
 function AppContent() {
-  const { notification, hideNotification } = useNotification();
-  
   return (
-    <>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Register" component={Register} />
-          <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
-          <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
-          <Stack.Screen name="Alertas" component={DashboardAlertas} />
-          <Stack.Screen name="Perfil" component={Perfil} />
-        </Stack.Navigator>
-      </NavigationContainer>
-      <NotificationBanner
-        title={notification.title}
-        body={notification.body}
-        visible={notification.visible}
-        onHide={hideNotification}
-      />
-    </>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="DrawerRoot" component={NavegadorComMenuLateral} />
+        <Stack.Screen name="Cadastro" component={CadastroDeMotos} />
+        <Stack.Screen name="Alertas" component={DashboardAlertas} />
+        <Stack.Screen name="Perfil" component={Perfil} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

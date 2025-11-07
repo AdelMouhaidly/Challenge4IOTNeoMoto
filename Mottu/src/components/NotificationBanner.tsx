@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Bell, X } from "lucide-react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
 const { width } = Dimensions.get("window");
@@ -64,7 +64,7 @@ export default function NotificationBanner({ title, body, visible, onHide }: Not
         activeOpacity={0.9}
       >
         <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
-          <Ionicons name="notifications" size={24} color="#FFFFFF" />
+          <Bell size={24} color="#FFFFFF" />
         </View>
         <View style={styles.textContainer}>
           <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
@@ -74,7 +74,7 @@ export default function NotificationBanner({ title, body, visible, onHide }: Not
             {body}
           </Text>
         </View>
-        <Ionicons name="close" size={20} color={colors.textSecondary} />
+        <X size={20} color={colors.textSecondary} />
       </TouchableOpacity>
     </Animated.View>
   );

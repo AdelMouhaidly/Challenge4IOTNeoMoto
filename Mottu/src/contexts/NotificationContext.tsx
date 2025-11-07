@@ -104,12 +104,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         },
         trigger: null,
       });
-
-      setNotification({
-        title,
-        body,
-        visible: true,
-      });
     } catch (error) {
       return;
     }

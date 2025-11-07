@@ -9,7 +9,6 @@ import {
   ScrollView,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import Icon from "react-native-vector-icons/FontAwesome5";
 import { Moto, MotoStatus } from "../types/index";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
@@ -82,10 +81,7 @@ export default function PatioDashboard() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <View style={styles.headerSection}>
         <Text style={[styles.titulo, { color: colors.primary }]}>
           {t("patio.title")}
         </Text>
@@ -115,45 +111,54 @@ export default function PatioDashboard() {
             </View>
           </View>
         </View>
+      </View>
 
+      <View style={styles.mapContainer}>
         <MapView
-        style={styles.patio}
-        initialRegion={{
-          latitude: (LAT_MIN + LAT_MAX) / 2,
-          longitude: (LNG_MIN + LNG_MAX) / 2,
-          latitudeDelta: 0.0025,
-          longitudeDelta: 0.0025,
-        }}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-        showsCompass={true}
-        zoomEnabled={true}
-        scrollEnabled={true}
-        pitchEnabled={true}
-        rotateEnabled={true}
-      >
-        {motos.map((moto) => (
-          <Marker
-            key={moto.id}
-            coordinate={{
-              latitude: paraLatitude(moto.y),
-              longitude: paraLongitude(moto.x),
-            }}
-            onPress={() => {
-              setMotoSelecionada(moto);
-              setMostrarModalDetalhes(false);
-            }}
-          >
-            <View style={[
-              styles.marcadorMoto,
-              { backgroundColor: corDoMarcador(moto.status) }
-            ]}>
-              <Icon name="motorcycle" size={12} color="#FFFFFF" />
-            </View>
-          </Marker>
-        ))}
-      </MapView>
+          style={styles.patio}
+          initialRegion={{
+            latitude: (LAT_MIN + LAT_MAX) / 2,
+            longitude: (LNG_MIN + LNG_MAX) / 2,
+            latitudeDelta: 0.0025,
+            longitudeDelta: 0.0025,
+          }}
+          showsUserLocation={false}
+          showsMyLocationButton={false}
+          showsCompass={false}
+          zoomEnabled={true}
+          scrollEnabled={true}
+          pitchEnabled={false}
+          rotateEnabled={false}
+          loadingEnabled={true}
+          cacheEnabled={true}
+        >
+          {motos.map((moto) => (
+            <Marker
+              key={moto.id}
+              coordinate={{
+                latitude: paraLatitude(moto.y),
+                longitude: paraLongitude(moto.x),
+              }}
+              onPress={() => {
+                setMotoSelecionada(moto);
+                setMostrarModalDetalhes(false);
+              }}
+            >
+              <View style={[
+                styles.marcadorMoto,
+                { backgroundColor: corDoMarcador(moto.status) }
+              ]}>
+                <Text style={styles.marcadorTexto}>🏍</Text>
+              </View>
+            </Marker>
+          ))}
+        </MapView>
+      </View>
 
+      <ScrollView
+        style={styles.scrollSection}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={[styles.painelInfo, { backgroundColor: colors.surface }]}>
           {motoSelecionada ? (
             <>
@@ -251,6 +256,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerSection: {
+    padding: 20,
+    paddingBottom: 10,
+  },
+  scrollSection: {
+    flex: 1,
+  },
   scrollContent: {
     padding: 20,
     paddingBottom: 40,
@@ -287,12 +299,18 @@ const styles = StyleSheet.create({
   legendaTexto: {
     fontSize: 12,
   },
-  patio: {
-    width: LARGURA_PATIO,
+  mapContainer: {
+    width: "100%",
     height: ALTURA_PATIO,
+    marginHorizontal: 20,
+    marginBottom: 10,
     borderRadius: 8,
     overflow: "hidden",
-    marginBottom: 20,
+    backgroundColor: "#e0e0e0",
+  },
+  patio: {
+    width: "100%",
+    height: "100%",
   },
   marcadorMoto: {
     width: 32,
@@ -307,6 +325,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 5,
+  },
+  marcadorTexto: {
+    fontSize: 16,
   },
   painelInfo: {
     borderRadius: 8,

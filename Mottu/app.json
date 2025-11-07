@@ -36,13 +36,17 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
-          "color": "#FF5722",
+          "icon": "./assets/notification-icon.png",
+          "color": "#4CAF50",
           "sounds": []
         }
       ],
       "expo-localization",
-      "expo-asset"
+      "expo-asset",
+      "expo-system-ui"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

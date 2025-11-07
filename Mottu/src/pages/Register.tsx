@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Sun, Moon } from "lucide-react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 
@@ -16,7 +17,7 @@ export default function Cadastro({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  const { colors } = useTheme();
+  const { colors, toggleTheme, isDark } = useTheme();
   const { t } = useLocalization();
 
   const validarEmail = (email: string): boolean => {
@@ -178,6 +179,20 @@ export default function Cadastro({ navigation }: any) {
           {t("register.login")}
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.botaoTema,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+        onPress={toggleTheme}
+      >
+        {isDark ? (
+          <Sun size={24} color={colors.primary} />
+        ) : (
+          <Moon size={24} color={colors.primary} />
+        )}
+      </TouchableOpacity>
     </View>
   );
 }
@@ -225,5 +240,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     fontSize: 18,
+  },
+  botaoTema: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.5,
   },
 });

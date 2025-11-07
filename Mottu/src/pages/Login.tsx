@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
+import { Sun, Moon } from "lucide-react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 import { useNotification } from "../contexts/NotificationContext";
@@ -142,11 +142,11 @@ export default function Login({ navigation }: NativeStackScreenProps<any>) {
         ]}
         onPress={toggleTheme}
       >
-        <Ionicons
-          name={isDark ? "sunny" : "moon"}
-          size={24}
-          color={colors.primary}
-        />
+        {isDark ? (
+          <Sun size={24} color={colors.primary} />
+        ) : (
+          <Moon size={24} color={colors.primary} />
+        )}
       </TouchableOpacity>
     </View>
   );

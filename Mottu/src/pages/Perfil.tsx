@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, User, Mail, Lock, Edit, Languages, Save, Trash2, Eye, EyeOff } from "lucide-react-native";
 import { StackLista } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
@@ -102,7 +102,7 @@ export default function Perfil({ navigation }: Props) {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.topBar, { backgroundColor: colors.header }]}>
         <TouchableOpacity onPress={voltar} style={styles.backIconButton}>
-          <Ionicons name="arrow-back" size={28} color="#fff" />
+          <ArrowLeft size={28} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -138,13 +138,13 @@ export default function Perfil({ navigation }: Props) {
         ]}
       >
         <Text style={[styles.cardTitle, { color: colors.primary }]}>
-          <Ionicons name="person-outline" size={20} color={colors.primary} />{" "}
+          <User size={20} color={colors.primary} />{" "}
           {t("profile.personalInfo")}
         </Text>
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="person" size={16} color={colors.primary} />{" "}
+            <User size={16} color={colors.primary} />{" "}
             {t("profile.fullName")}
           </Text>
           <View
@@ -168,7 +168,7 @@ export default function Perfil({ navigation }: Props) {
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="mail" size={16} color={colors.primary} />{" "}
+            <Mail size={16} color={colors.primary} />{" "}
             {t("profile.email")}
           </Text>
           <View
@@ -194,7 +194,7 @@ export default function Perfil({ navigation }: Props) {
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="lock-closed" size={16} color={colors.primary} />{" "}
+            <Lock size={16} color={colors.primary} />{" "}
             {t("profile.password")}
           </Text>
 
@@ -218,7 +218,7 @@ export default function Perfil({ navigation }: Props) {
                   { backgroundColor: colors.primary },
                 ]}
               >
-                <Ionicons name="pencil" size={16} color="#fff" />
+                <Edit size={16} color="#fff" />
                 <Text style={styles.alterarSenhaText}>
                   {t("profile.change")}
                 </Text>
@@ -247,18 +247,18 @@ export default function Perfil({ navigation }: Props) {
                 onPress={() => setMostrarSenha(!mostrarSenha)}
                 style={styles.eyeButton}
               >
-                <Ionicons
-                  name={mostrarSenha ? "eye-off" : "eye"}
-                  size={20}
-                  color={colors.textSecondary}
-                />
+                {mostrarSenha ? (
+                  <EyeOff size={20} color={colors.textSecondary} />
+                ) : (
+                  <Eye size={20} color={colors.textSecondary} />
+                )}
               </TouchableOpacity>
             </View>
           )}
         </View>
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: colors.text }]}>
-            <Ionicons name="language" size={16} color={colors.primary} />{" "}
+            <Languages size={16} color={colors.primary} />{" "}
             {t("profile.language")}
           </Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
@@ -316,7 +316,7 @@ export default function Perfil({ navigation }: Props) {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <>
-              <Ionicons name="save-outline" size={20} color="#fff" />
+              <Save size={20} color="#fff" />
               <Text style={styles.primaryButtonText}>
                 {t("profile.saveChanges")}
               </Text>
@@ -328,7 +328,7 @@ export default function Perfil({ navigation }: Props) {
           style={[styles.dangerButton, { backgroundColor: colors.error }]}
           onPress={excluirConta}
         >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
+          <Trash2 size={20} color="#fff" />
           <Text style={styles.dangerButtonText}>
             {t("profile.deleteAccount")}
           </Text>

@@ -8,7 +8,7 @@ import {
   Linking,
   Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Info, GitCommit, Users, Github, List, Code } from "lucide-react-native";
 import Constants from "expo-constants";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
@@ -88,11 +88,7 @@ export default function SobreApp() {
 
       <View style={[styles.section, { backgroundColor: colors.surface }]}>
         <View style={styles.sectionHeader}>
-          <Ionicons
-            name="information-circle"
-            size={24}
-            color={colors.primary}
-          />
+          <Info size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("about.aboutApp")}
           </Text>
@@ -104,7 +100,7 @@ export default function SobreApp() {
 
       <View style={[styles.section, { backgroundColor: colors.surface }]}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="git-commit" size={24} color={colors.primary} />
+          <GitCommit size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("about.buildInfo")}
           </Text>
@@ -158,7 +154,7 @@ export default function SobreApp() {
 
       <View style={[styles.section, { backgroundColor: colors.surface }]}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="people" size={24} color={colors.primary} />
+          <Users size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("about.projectMembers")}
           </Text>
@@ -179,7 +175,7 @@ export default function SobreApp() {
               onPress={() => abrirLink(integrante.githubUrl)}
               style={[styles.githubButton, { backgroundColor: colors.primary }]}
             >
-              <Ionicons name="logo-github" size={20} color="#FFFFFF" />
+              <Github size={20} color="#FFFFFF" />
               <Text style={styles.githubText}>{integrante.github}</Text>
             </TouchableOpacity>
           </View>
@@ -188,15 +184,14 @@ export default function SobreApp() {
 
       <View style={[styles.section, { backgroundColor: colors.surface }]}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="list" size={24} color={colors.primary} />
+          <List size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("about.features")}
           </Text>
         </View>
         {funcionalidades.map((funcionalidade, index) => (
           <View key={index} style={styles.funcionalidadeItem}>
-            <Ionicons
-              name="checkmark-circle"
+            <Info
               size={20}
               color={colors.primary}
             />
@@ -209,7 +204,7 @@ export default function SobreApp() {
 
       <View style={[styles.section, { backgroundColor: colors.surface }]}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="code-slash" size={24} color={colors.primary} />
+          <Code size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             {t("about.technologies")}
           </Text>

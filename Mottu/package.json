@@ -23,7 +23,9 @@
     "expo-localization": "~16.1.6",
     "expo-notifications": "~0.31.4",
     "expo-status-bar": "~2.2.3",
+    "expo-system-ui": "~5.0.11",
     "i18n-js": "^4.5.1",
+    "lucide-react-native": "^0.553.0",
     "react": "19.0.0",
     "react-native": "^0.79.6",
     "react-native-gesture-handler": "~2.24.0",
@@ -31,11 +33,12 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-svg": "15.11.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
+    "sharp": "^0.34.5",
     "typescript": "~5.8.3"
   },
   "private": true

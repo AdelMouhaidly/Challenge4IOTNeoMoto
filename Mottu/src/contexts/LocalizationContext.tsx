@@ -60,9 +60,10 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({
         const locales = Localization.getLocales();
         const deviceLocale =
           locales && locales.length > 0
-            ? locales[0].languageTag || locales[0].languageCode
+            ? locales[0].languageTag || locales[0].languageCode || "pt-BR"
             : "pt-BR";
-        const defaultLocale = deviceLocale.startsWith("es") ? "es" : "pt-BR";
+        const defaultLocale =
+          deviceLocale && deviceLocale.startsWith("es") ? "es" : "pt-BR";
         setLocaleState(defaultLocale);
         i18n.locale = defaultLocale;
       }
