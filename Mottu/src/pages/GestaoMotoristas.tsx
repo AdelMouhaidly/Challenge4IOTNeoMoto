@@ -14,6 +14,7 @@ import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 import { useNotification } from "../contexts/NotificationContext";
+import { getJavaApiUrl } from "../config/api";
 
 export type Motorista = {
   id: number;
@@ -43,7 +44,7 @@ export type Moto = {
   y: number;
 };
 
-const API_BASE_URL = "http://10.0.2.2:8080/api";
+const API_BASE_URL = getJavaApiUrl();
 
 export default function GestaoMotoristas() {
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);

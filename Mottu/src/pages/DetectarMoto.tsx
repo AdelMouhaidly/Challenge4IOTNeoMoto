@@ -14,13 +14,10 @@ import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 
+import { getPythonApiUrl } from "../config/api";
+
 const getApiUrl = () => {
-  if (Platform.OS === "android") {
-    return "http://10.0.2.2:8000/detectar-moto";
-  } else if (Platform.OS === "ios") {
-    return "http://localhost:8000/detectar-moto";
-  }
-  return "http://192.168.15.5:8000/detectar-moto";
+  return `${getPythonApiUrl()}/detectar-moto`;
 };
 
 export default function DetectarMoto() {

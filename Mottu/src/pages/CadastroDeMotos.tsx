@@ -13,6 +13,7 @@ import {
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 import { useNotification } from "../contexts/NotificationContext";
+import { getJavaApiUrl } from "../config/api";
 
 export type MotoStatus = "parada" | "em uso" | "aguardando";
 
@@ -26,7 +27,7 @@ export type Moto = {
   configuracoes: string;
 };
 
-const API_BASE_URL = "http://10.0.2.2:8080/api";
+const API_BASE_URL = getJavaApiUrl();
 
 export default function CadastroDeMotos() {
   const [nome, setNome] = useState("");
