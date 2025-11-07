@@ -103,39 +103,53 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 
 ### Instruções para rodar o app mobile
 
-1. **Entre na pasta do projeto mobile**:
+1. Entre na pasta do projeto mobile:
 
    ```bash
    cd Mottu
    ```
 
-2. **Instale as dependências do projeto**:
+2. Instale as dependências:
 
    ```bash
    npm install
    ```
 
-3. **Inicie o servidor do Expo**:
+3. Inicie o servidor do Expo:
 
    ```bash
    npx expo start
    ```
 
-   Isso abrirá o Metro Bundler no navegador. Você pode:
+4. Escaneie o QR Code com o app Expo Go no celular ou use o emulador Android.
 
-   - Escanear o QR Code com o app **Expo Go** no celular.
-   - Usar emulador com Android Studio.
+### Configuração das APIs
 
-4. **(Opcional) Rodar no emulador Android diretamente**:
-   ```bash
-   npm run android
-   ```
+O app pode usar as APIs de duas formas:
+
+**Opção 1: APIs hospedadas no Render (recomendado)**
+
+As APIs já estão configuradas para usar os endpoints do Render:
+
+- API Java: https://mottu-java-api.onrender.com/api
+- API Python: https://mottu-python-api.onrender.com
+
+**Importante:** O Render usa plano gratuito que coloca os serviços em sleep após 15 minutos de inatividade. Antes de usar o app, acesse os links acima no navegador para "acordar" os serviços. Aguarde alguns segundos até os serviços iniciarem antes de usar o app.
+
+**Opção 2: APIs locais**
+
+Para usar as APIs localmente, edite o arquivo `Mottu/src/config/api.ts` e altere as funções `getJavaApiUrl()` e `getPythonApiUrl()` para retornar:
+
+- `API_CONFIG.JAVA_API_LOCAL` (http://10.0.2.2:8080/api)
+- `API_CONFIG.PYTHON_API_LOCAL` (http://10.0.2.2:8000)
+
+Certifique-se de que as APIs locais estejam rodando antes de iniciar o app.
 
 ---
 
 ## Funcionalidades do App Mobile
 
-###  **Páginas Principais**
+### **Páginas Principais**
 
 - **Home**: Página inicial com informações sobre a Mottu
 - **Pátio Dashboard**: Visualização em mapa das motos no pátio
@@ -145,13 +159,13 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - **Detecção de Motos**: IA para detectar motos em imagens (API Python)
 - **Perfil**: Gerenciamento de dados do usuário
 
-###  **Sistema de Autenticação**
+### **Sistema de Autenticação**
 
 - Login e cadastro de usuários
 - Armazenamento local com AsyncStorage
 - Logout funcional
 
-###  **Sistema de Temas**
+### **Sistema de Temas**
 
 - **Tema Dark/Light**: Alternância completa entre temas
 - **Persistência**: Tema salvo automaticamente no AsyncStorage
@@ -159,7 +173,7 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
 - **Menu Hambúrguer**: Totalmente adaptado ao tema ativo
 - **Transição Suave**: Mudança instantânea entre temas
 
-##  **APIs Integradas**
+## **APIs Integradas**
 
 ### 1. **API Python (FastAPI)** - Detecção de Motos
 
@@ -182,12 +196,53 @@ NeoMoto é um sistema digital interativo desenvolvido para otimizar a gestão da
   - `POST /api/motoristas/{motoristaId}/moto/{motoId}` - Associar motorista à moto
 - **Porta**: 8080
 
-## Dicas importantes
+## Como executar o projeto completo
 
-- **Para API Python**: Caso tenha problemas com o `uvicorn`, verifique se o ambiente virtual está ativado corretamente.
-- **Para API Java**: Certifique-se de ter Java 17+ instalado.
-- **Para o App Mobile**: O app funciona offline caso as APIs não estejam rodando.
-- **Detecção de Motos**: Se der erro na primeira tentativa, tente novamente.
+### Executando localmente
+
+1. Inicie a API Java (porta 8080):
+
+   ```bash
+   cd NeoMoto
+   ./gradlew bootRun
+   ```
+
+2. Inicie a API Python (porta 8000):
+
+   ```bash
+   cd Challenge-IOT
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   python -m uvicorn detect_motos:app --host 0.0.0.0 --port 8000
+   ```
+
+3. Configure o app mobile para usar APIs locais (edite `Mottu/src/config/api.ts`)
+
+4. Inicie o app mobile:
+   ```bash
+   cd Mottu
+   npm install
+   npx expo start
+   ```
+
+### Usando APIs hospedadas no Render
+
+1. Acesse os links abaixo no navegador para ativar os serviços (necessário devido ao plano gratuito do Render):
+
+   - API Java: https://mottu-java-api.onrender.com/api
+   - API Python: https://mottu-python-api.onrender.com
+
+2. Aguarde alguns segundos para os serviços iniciarem
+
+3. Inicie o app mobile (já configurado para usar as APIs do Render):
+   ```bash
+   cd Mottu
+   npm install
+   npx expo start
+   ```
+
+**Nota:** Se as APIs do Render não responderem, acesse os links novamente para reativá-las. O plano gratuito coloca os serviços em sleep após 15 minutos de inatividade.
 
 ## **Estrutura de Pastas**
 
@@ -262,8 +317,6 @@ Desenvolvido por:
 - Afonso Correia Pereira - [![GitHub](https://img.shields.io/badge/GitHub-Perfil-blue?style=for-the-badge&logo=github)](https://github.com/afonsocp)
 - Tiago Ferro - [![GitHub](https://img.shields.io/badge/GitHub-Perfil-blue?style=for-the-badge&logo=github)](https://github.com/Ferro333)
 
-## Video da Aplicação 
+## Video da Aplicação
 
 [Clique aqui](https://www.youtube.com/watch?v=UsrqBACNkuI)
-
-
