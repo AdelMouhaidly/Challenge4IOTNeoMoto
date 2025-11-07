@@ -20,7 +20,7 @@ export default function SobreApp() {
   const appInfo = {
     name: Constants.expoConfig?.name || "Mottu",
     version: Constants.expoConfig?.version || "1.0.0",
-    description: "Sistema de gestão inteligente de frota para a Mottu",
+    description: t("about.appDescription"),
   };
 
   const commitHash =
@@ -51,16 +51,16 @@ export default function SobreApp() {
   ];
 
   const funcionalidades = [
-    "Autenticação de usuários",
-    "CRUD completo de motos",
-    "CRUD completo de motoristas",
-    "Mapa interativo do pátio com 30 motos",
-    "Dashboard de alertas e monitoramento",
-    "Detecção de motos por IA (YOLOv8)",
-    "Sistema de notificações push",
-    "Internacionalização (PT-BR e ES)",
-    "Tema claro e escuro",
-    "Integração com API Java/Spring Boot",
+    t("about.featuresList.auth"),
+    t("about.featuresList.bikesCrud"),
+    t("about.featuresList.driversCrud"),
+    t("about.featuresList.map"),
+    t("about.featuresList.alerts"),
+    t("about.featuresList.detection"),
+    t("about.featuresList.notifications"),
+    t("about.featuresList.i18n"),
+    t("about.featuresList.theme"),
+    t("about.featuresList.api"),
   ];
 
   const abrirLink = (url: string) => {
@@ -82,7 +82,7 @@ export default function SobreApp() {
           {appInfo.name}
         </Text>
         <Text style={[styles.version, { color: colors.textSecondary }]}>
-          Versão {appInfo.version}
+          {t("about.version")} {appInfo.version}
         </Text>
       </View>
 
@@ -94,7 +94,7 @@ export default function SobreApp() {
             color={colors.primary}
           />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Sobre o Aplicativo
+            {t("about.aboutApp")}
           </Text>
         </View>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
@@ -106,7 +106,7 @@ export default function SobreApp() {
         <View style={styles.sectionHeader}>
           <Ionicons name="git-commit" size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Informações de Build
+            {t("about.buildInfo")}
           </Text>
         </View>
         <View
@@ -116,7 +116,7 @@ export default function SobreApp() {
           ]}
         >
           <Text style={[styles.commitLabel, { color: colors.textSecondary }]}>
-            Commit Hash:
+            {t("about.commitHash")}
           </Text>
           <Text style={[styles.commitHash, { color: colors.primary }]}>
             {commitHash}
@@ -129,7 +129,7 @@ export default function SobreApp() {
           ]}
         >
           <Text style={[styles.commitLabel, { color: colors.textSecondary }]}>
-            Expo SDK:
+            {t("about.expoSdk")}
           </Text>
           <Text style={[styles.commitHash, { color: colors.primary }]}>
             {Constants.expoConfig?.sdkVersion ||
@@ -144,15 +144,15 @@ export default function SobreApp() {
           ]}
         >
           <Text style={[styles.commitLabel, { color: colors.textSecondary }]}>
-            Plataforma:
+            {t("about.platform")}
           </Text>
           <Text style={[styles.commitHash, { color: colors.primary }]}>
             {Constants.platform?.ios ? "iOS" : "Android"} -{" "}
-            {Constants.deviceName || "Dispositivo"}
+            {Constants.deviceName || t("about.device")}
           </Text>
         </View>
         <Text style={[styles.commitNote, { color: colors.textSecondary }]}>
-          Este é o commit de referência da versão publicada
+          {t("about.commitNote")}
         </Text>
       </View>
 
@@ -160,7 +160,7 @@ export default function SobreApp() {
         <View style={styles.sectionHeader}>
           <Ionicons name="people" size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Integrantes do Projeto
+            {t("about.projectMembers")}
           </Text>
         </View>
         {integrantes.map((integrante, index) => (
@@ -190,7 +190,7 @@ export default function SobreApp() {
         <View style={styles.sectionHeader}>
           <Ionicons name="list" size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Funcionalidades
+            {t("about.features")}
           </Text>
         </View>
         {funcionalidades.map((funcionalidade, index) => (
@@ -211,7 +211,7 @@ export default function SobreApp() {
         <View style={styles.sectionHeader}>
           <Ionicons name="code-slash" size={24} color={colors.primary} />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Tecnologias Utilizadas
+            {t("about.technologies")}
           </Text>
         </View>
         <View style={styles.techGrid}>
@@ -262,10 +262,10 @@ export default function SobreApp() {
 
       <View style={styles.footer}>
         <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-          © 2024 Mottu - Todos os direitos reservados
+          {t("about.footer")}
         </Text>
         <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-          Desenvolvido para FIAP - 3º Sprint
+          {t("about.developedFor")}
         </Text>
       </View>
     </ScrollView>
