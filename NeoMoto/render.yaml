@@ -2,6 +2,7 @@ services:
   - type: web
     name: mottu-java-api
     env: docker
+    branch: challenge4
     dockerfilePath: ./Dockerfile
     dockerContext: .
     envVars:
