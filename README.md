@@ -161,6 +161,12 @@ Challenge4IOTNeoMoto/
 - Afonso Correia Pereira - [GitHub](https://github.com/afonsocp)
 - Tiago Ferro - [GitHub](https://github.com/Ferro333)
 
+
+
 ## Vídeo da Aplicação
 
-[Assistir no YouTube](https://www.youtube.com/watch?v=UsrqBACNkuI)
+[Assistir no YouTube](https://youtu.be/zs_qX9jk9E4?si=IpATf30Nl36mdQtN)
+
+## Link do Firebase Distribution
+
+[Clique aqui para acessar](https://appdistribution.firebase.google.com/testerapps/1:367184149135:android:830ae108746a10e1428efa/releases/1ulp6g8gs107o?utm_source=firebase-console)
