@@ -7,10 +7,31 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O app precisa de acesso às suas fotos para detectar motos.",
+          "cameraPermission": "O app precisa de acesso à câmera para tirar fotos.",
+          "mediaLibraryPermission": "O app precisa de acesso à galeria de mídia para selecionar imagens."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4CAF50",
+          "sounds": []
+        }
+      ],
+      "expo-localization",
+      "expo-asset",
+      "expo-system-ui"
+    ],
     "extra": {
       "commitHash": "21fd1a6",
       "eas": {
-        "projectId": "35641084-9b83-45c7-8024-fe09d5b06813"
+        "projectId": "3c0a5de9-8f28-4436-a963-3d007925ea10"
       }
     },
     "splash": {
@@ -28,23 +49,13 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.CAMERA"
       ],
       "package": "com.adelmouhaidly.Mottu"
     },
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#4CAF50",
-          "sounds": []
-        }
-      ],
-      "expo-localization",
-      "expo-asset",
-      "expo-system-ui"
-    ],
     "assetBundlePatterns": [
       "**/*"
     ],

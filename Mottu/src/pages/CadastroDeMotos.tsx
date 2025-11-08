@@ -238,13 +238,13 @@ export default function CadastroDeMotos() {
             {item.name}
           </Text>
           <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-            Marca: {item.marca} | Status: {item.status}
+            {t("bikes.brand")}: {item.marca} | {t("bikes.status")}: {item.status}
           </Text>
           <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-            Configurações: {item.configuracoes}
+            {t("bikes.settings")}: {item.configuracoes}
           </Text>
           <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-            Coordenadas: x={item.x.toFixed(1)} / y={item.y.toFixed(1)}
+            {t("bikes.coordinates")}: x={item.x.toFixed(1)} / y={item.y.toFixed(1)}
           </Text>
         </View>
         <View style={styles.botoesAcao}>
@@ -456,25 +456,43 @@ export default function CadastroDeMotos() {
 
           <View style={styles.botoesModal}>
             <TouchableOpacity
-              style={[styles.botao, { flex: 1, marginRight: 10 }]}
+              style={[
+                styles.botao,
+                styles.botaoAtualizar,
+                { 
+                  flex: 1, 
+                  marginRight: 10,
+                  backgroundColor: colors.success 
+                }
+              ]}
               onPress={salvarEdicaoMoto}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.textoBotao}>Atualizar Moto</Text>
+                <Text style={styles.textoBotao}>{t("bikes.updateBike")}</Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.botao, { flex: 1, backgroundColor: "#666" }]}
+              style={[
+                styles.botao,
+                styles.botaoCancelar,
+                { 
+                  flex: 1,
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                }
+              ]}
               onPress={() => {
                 setModalEdicaoVisivel(false);
                 limparFormulario();
               }}
             >
-              <Text style={styles.textoBotao}>Cancelar</Text>
+              <Text style={[styles.textoBotaoCancelar, { color: colors.text }]}>
+                {t("common.cancel")}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -578,5 +596,25 @@ const styles = StyleSheet.create({
   botoesModal: {
     flexDirection: "row",
     marginTop: 20,
+  },
+  botaoAtualizar: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  botaoCancelar: {
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  textoBotaoCancelar: {
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
   },
 });

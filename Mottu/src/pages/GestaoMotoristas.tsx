@@ -232,7 +232,7 @@ export default function GestaoMotoristas() {
       [
         { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Excluir",
+          text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
             setLoading(true);
@@ -270,7 +270,7 @@ export default function GestaoMotoristas() {
           {item.nome}
         </Text>
         <Text style={[styles.descricaoCartao, { color: colors.text }]}>
-          CPF: {item.cpf}
+          {t("drivers.cpf")}: {item.cpf}
         </Text>
         <Text style={[styles.descricaoCartao, { color: colors.text }]}>
           {t("drivers.email")}: {item.email}

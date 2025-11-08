@@ -125,6 +125,8 @@ export default {
     inUse: "En Uso",
     waiting: "Esperando",
     editBike: "Editar Moto",
+    updateBike: "Actualizar Moto",
+    coordinates: "Coordenadas",
     confirmDelete: "Confirmar Eliminación",
     confirmDeleteMessage: "¿Realmente deseas eliminar esta moto?",
     errorTitle: "Error",
@@ -216,6 +218,8 @@ export default {
     errorPermission: "Permiso para acceder a la galería fue denegado",
     errorDetection: "Error al detectar motos. Verifica si la API Python está ejecutándose.",
     errorTimeout: "Tiempo de conexión agotado. Verifica si la API está ejecutándose.",
+    errorConnection: "Error de conexión. Verifica tu internet y si la API está accesible.",
+    coldStartMessage: "La API puede estar iniciando (cold start). Intenta nuevamente.",
   },
   profile: {
     title: "Mi Perfil",
