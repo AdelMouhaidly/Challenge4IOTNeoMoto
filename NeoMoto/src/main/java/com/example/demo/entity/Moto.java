@@ -6,6 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "motos")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Moto {
     
     @Id

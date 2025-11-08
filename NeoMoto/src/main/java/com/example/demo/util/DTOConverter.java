@@ -18,12 +18,17 @@ public class DTOConverter {
         dto.setEndereco(motorista.getEndereco());
         dto.setStatus(motorista.getStatus());
         
-        if (motorista.getMoto() != null) {
-            MotoristaDTO.MotoSimpleDTO motoDTO = new MotoristaDTO.MotoSimpleDTO();
-            motoDTO.setId(motorista.getMoto().getId());
-            motoDTO.setName(motorista.getMoto().getName());
-            motoDTO.setMarca(motorista.getMoto().getMarca());
-            dto.setMoto(motoDTO);
+        try {
+            if (motorista.getMoto() != null) {
+                MotoristaDTO.MotoSimpleDTO motoDTO = new MotoristaDTO.MotoSimpleDTO();
+                motoDTO.setId(motorista.getMoto().getId());
+                motoDTO.setName(motorista.getMoto().getName());
+                motoDTO.setMarca(motorista.getMoto().getMarca());
+                dto.setMoto(motoDTO);
+            }
+        } catch (Exception e) {
+            // Se houver erro ao acessar a moto (lazy loading), simplesmente não incluir
+            dto.setMoto(null);
         }
         
         return dto;

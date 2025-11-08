@@ -212,11 +212,22 @@ export default function GestaoMotoristas() {
         limparFormulario();
         carregarMotoristas();
       } else {
-        Alert.alert(t("drivers.errorTitle"), motoristaEditando ? t("drivers.errorUpdate") : t("drivers.errorCreate"));
+        const errorData = await response.text();
+        let errorMessage = motoristaEditando ? t("drivers.errorUpdate") : t("drivers.errorCreate");
+        try {
+          const errorJson = JSON.parse(errorData);
+          if (errorJson.error) {
+            errorMessage = errorJson.error;
+          }
+        } catch (e) {
+          // Se não conseguir parsear, usar a mensagem padrão
+        }
+        console.error("Erro da API:", errorData);
+        Alert.alert(t("drivers.errorTitle"), errorMessage);
       }
     } catch (error) {
       console.error("Erro ao salvar motorista:", error);
-      Alert.alert(t("drivers.errorTitle"), t("drivers.errorLoad"));
+      Alert.alert(t("drivers.errorTitle"), motoristaEditando ? t("drivers.errorUpdate") : t("drivers.errorCreate"));
     } finally {
       setLoading(false);
     }

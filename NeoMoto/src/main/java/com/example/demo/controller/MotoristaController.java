@@ -5,6 +5,7 @@ import com.example.demo.entity.Moto;
 import com.example.demo.repository.MotoristaRepository;
 import com.example.demo.repository.MotoRepository;
 import com.example.demo.dto.MotoristaDTO;
+import com.example.demo.dto.MotoristaUpdateDTO;
 import com.example.demo.util.DTOConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -60,18 +61,31 @@ public class MotoristaController {
     public ResponseEntity<?> createMotorista(@RequestBody Motorista motorista) {
         try {
             // Verificar se CPF já existe
-            if (motoristaRepository.findByCpf(motorista.getCpf()).isPresent()) {
+            if (motorista.getCpf() != null && motoristaRepository.findByCpf(motorista.getCpf()).isPresent()) {
                 return ResponseEntity.badRequest().body("{\"error\":\"CPF já cadastrado\"}");
             }
             
             // Verificar se email já existe
-            if (motoristaRepository.findByEmail(motorista.getEmail()).isPresent()) {
+            if (motorista.getEmail() != null && motoristaRepository.findByEmail(motorista.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest().body("{\"error\":\"Email já cadastrado\"}");
             }
             
             // Definir status padrão se não informado
             if (motorista.getStatus() == null || motorista.getStatus().isEmpty()) {
                 motorista.setStatus("ativo");
+            }
+            
+            // Processar moto associada
+            if (motorista.getMoto() != null && motorista.getMoto().getId() != null) {
+                Optional<Moto> optionalMoto = motoRepository.findById(motorista.getMoto().getId());
+                if (optionalMoto.isPresent()) {
+                    motorista.setMoto(optionalMoto.get());
+                } else {
+                    return ResponseEntity.badRequest().body("{\"error\":\"Moto não encontrada\"}");
+                }
+            } else {
+                // Se moto não foi enviada ou não tem ID, desassociar
+                motorista.setMoto(null);
             }
             
             Motorista motoristasSalvo = motoristaRepository.save(motorista);
@@ -100,22 +114,75 @@ public class MotoristaController {
 
     // PUT - Atualizar motorista
     @PutMapping("/{id}")
-    public ResponseEntity<Motorista> updateMotorista(@PathVariable Long id, @RequestBody Motorista motoristaDetails) {
-        Optional<Motorista> optionalMotorista = motoristaRepository.findById(id);
-        
-        if (optionalMotorista.isPresent()) {
-            Motorista motorista = optionalMotorista.get();
-            motorista.setNome(motoristaDetails.getNome());
-            motorista.setTelefone(motoristaDetails.getTelefone());
-            motorista.setEmail(motoristaDetails.getEmail());
-            motorista.setCnh(motoristaDetails.getCnh());
-            motorista.setEndereco(motoristaDetails.getEndereco());
-            motorista.setStatus(motoristaDetails.getStatus());
+    public ResponseEntity<?> updateMotorista(@PathVariable Long id, @RequestBody MotoristaUpdateDTO motoristaDetails) {
+        try {
+            Optional<Motorista> optionalMotorista = motoristaRepository.findById(id);
             
-            return ResponseEntity.ok(motoristaRepository.save(motorista));
+            if (!optionalMotorista.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Motorista motorista = optionalMotorista.get();
+            
+            // Validar CPF duplicado (exceto o próprio motorista)
+            if (motoristaDetails.getCpf() != null && !motoristaDetails.getCpf().equals(motorista.getCpf())) {
+                Optional<Motorista> motoristaComCpf = motoristaRepository.findByCpf(motoristaDetails.getCpf());
+                if (motoristaComCpf.isPresent() && !motoristaComCpf.get().getId().equals(id)) {
+                    return ResponseEntity.badRequest().body("{\"error\":\"CPF já cadastrado\"}");
+                }
+            }
+            
+            // Validar email duplicado (exceto o próprio motorista)
+            if (motoristaDetails.getEmail() != null && !motoristaDetails.getEmail().equals(motorista.getEmail())) {
+                Optional<Motorista> motoristaComEmail = motoristaRepository.findByEmail(motoristaDetails.getEmail());
+                if (motoristaComEmail.isPresent() && !motoristaComEmail.get().getId().equals(id)) {
+                    return ResponseEntity.badRequest().body("{\"error\":\"Email já cadastrado\"}");
+                }
+            }
+            
+            // Atualizar campos básicos
+            if (motoristaDetails.getNome() != null && !motoristaDetails.getNome().isEmpty()) {
+                motorista.setNome(motoristaDetails.getNome());
+            }
+            if (motoristaDetails.getTelefone() != null && !motoristaDetails.getTelefone().isEmpty()) {
+                motorista.setTelefone(motoristaDetails.getTelefone());
+            }
+            if (motoristaDetails.getEmail() != null && !motoristaDetails.getEmail().isEmpty()) {
+                motorista.setEmail(motoristaDetails.getEmail());
+            }
+            if (motoristaDetails.getCnh() != null && !motoristaDetails.getCnh().isEmpty()) {
+                motorista.setCnh(motoristaDetails.getCnh());
+            }
+            if (motoristaDetails.getEndereco() != null && !motoristaDetails.getEndereco().isEmpty()) {
+                motorista.setEndereco(motoristaDetails.getEndereco());
+            }
+            if (motoristaDetails.getStatus() != null && !motoristaDetails.getStatus().isEmpty()) {
+                motorista.setStatus(motoristaDetails.getStatus());
+            }
+            
+            // Atualizar moto associada
+            if (motoristaDetails.getMoto() != null) {
+                Long motoId = motoristaDetails.getMoto().getId();
+                if (motoId != null && motoId > 0) {
+                    Optional<Moto> optionalMoto = motoRepository.findById(motoId);
+                    if (optionalMoto.isPresent()) {
+                        motorista.setMoto(optionalMoto.get());
+                    } else {
+                        return ResponseEntity.badRequest().body("{\"error\":\"Moto não encontrada\"}");
+                    }
+                } else {
+                    // Se motoId é null ou 0, desassociar a moto
+                    motorista.setMoto(null);
+                }
+            }
+            // Se moto não foi enviada no request, manter a atual (não alterar)
+            
+            Motorista motoristaSalvo = motoristaRepository.save(motorista);
+            return ResponseEntity.ok(DTOConverter.toDTO(motoristaSalvo));
+        } catch (Exception e) {
+            e.printStackTrace(); // Log do erro para debug
+            return ResponseEntity.status(500).body("{\"error\":\"Erro ao atualizar motorista: " + e.getMessage() + "\"}");
         }
-        
-        return ResponseEntity.notFound().build();
     }
 
     // DELETE - Deletar motorista
