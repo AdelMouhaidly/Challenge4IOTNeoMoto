@@ -1,13 +1,110 @@
 # Projeto Mottu Challenge - Mobile
 
-Sistema de gestão de frota de motocicletas com rastreamento em tempo real, detecção por IA e monitoramento IoT.
+## Introdução do Projeto
 
-## Arquitetura
+O **Mottu** é um sistema completo de gestão de frota de motocicletas desenvolvido para otimizar o controle e monitoramento de veículos em tempo real. A aplicação combina tecnologias de **Inteligência Artificial**, **Internet das Coisas (IoT)** e **desenvolvimento mobile** para oferecer uma solução robusta e inovadora.
 
-- **Backend Python (FastAPI)**: Detecção de motos por IA e monitoramento IoT
-- **Backend Java (Spring Boot)**: CRUD de motos e motoristas
-- **Frontend Mobile (React Native + Expo)**: App mobile multiplataforma
+### Objetivo
 
+Facilitar a gestão de frotas de motocicletas através de:
+
+- **Rastreamento em tempo real** da localização dos veículos
+- **Detecção automática** de motos usando visão computacional (YOLOv8)
+- **Monitoramento IoT** com sensores para status online/offline
+- **Gestão completa** de motoristas e veículos através de CRUDs intuitivos
+- **Alertas inteligentes** para situações críticas (veículos desaparecidos, manutenção necessária)
+
+### Tecnologias Principais
+
+- **Frontend**: React Native + Expo (aplicativo multiplataforma iOS/Android)
+- **Backend Java**: Spring Boot (CRUD de motos e motoristas)
+- **Backend Python**: FastAPI (IA para detecção de motos e monitoramento IoT)
+- **IA**: YOLOv8 para detecção de objetos em imagens
+- **Banco de Dados**: H2 (in-memory) para desenvolvimento
+
+## Problema Identificado
+
+### Falta de Gestão de Frotas de Motocicletas
+
+Empresas que operam com frotas de motocicletas enfrentam diversos desafios na gestão e controle de seus veículos e motoristas. Os principais problemas identificados são:
+
+1. **Falta de Visibilidade em Tempo Real**: Empresas não conseguem acompanhar a localização e o status de suas motocicletas em tempo real, dificultando o planejamento e a tomada de decisões.
+
+2. **Gestão Manual de Dados**: O controle de motoristas e veículos é feito de forma manual, através de planilhas ou sistemas desatualizados, resultando em:
+   - Dados desatualizados ou inconsistentes
+   - Perda de tempo com processos manuais
+   - Maior probabilidade de erros humanos
+   - Dificuldade em rastrear histórico de alterações
+
+3. **Ausência de Monitoramento IoT**: Não há sistema de monitoramento que identifique automaticamente quando uma motocicleta está online, offline ou desaparecida, dificultando a detecção precoce de problemas.
+
+4. **Falta de Alertas Inteligentes**: Não existe um sistema que alerte automaticamente sobre situações críticas como:
+   - Veículos desaparecidos
+   - Necessidade de manutenção
+   - Problemas de conectividade
+   - Anomalias no comportamento dos veículos
+
+5. **Dificuldade na Associação Motorista-Veículo**: A gestão da relação entre motoristas e motocicletas é complexa e propensa a erros quando feita manualmente.
+
+6. **Ausência de Detecção Automática**: Não há sistema que utilize inteligência artificial para identificar e catalogar motocicletas automaticamente através de imagens.
+
+## Solução Implementada
+
+O sistema **Mottu** foi desenvolvido para resolver todos esses problemas através de uma solução completa e integrada:
+
+### 1. Rastreamento em Tempo Real
+
+O sistema oferece um dashboard interativo com mapa em tempo real mostrando a localização de todas as motocicletas da frota. Isso permite:
+- Visualização geográfica da distribuição dos veículos
+- Monitoramento contínuo da posição de cada moto
+- Navegação e planejamento de rotas otimizadas
+
+### 2. CRUD Completo de Motos e Motoristas
+
+Foi implementado um sistema completo de gestão (Create, Read, Update, Delete) para:
+- **Motos**: Cadastro, atualização, listagem e exclusão de veículos com todas as informações relevantes (nome, marca, configurações, status, localização)
+- **Motoristas**: Gestão completa de motoristas incluindo dados pessoais, documentos, contatos e associação com veículos
+
+### 3. Monitoramento IoT
+
+O sistema integra sensores IoT para monitorar o status de cada motocicleta:
+- **Status Online/Offline**: Identificação automática quando um veículo está conectado ou desconectado
+- **Status Desaparecida**: Alerta automático quando uma moto não envia sinais há um período determinado
+- **Histórico de Leituras**: Armazenamento e visualização de todas as leituras IoT para análise histórica
+
+### 4. Sistema de Alertas Inteligentes
+
+Foi implementado um dashboard de alertas que notifica sobre:
+- **Veículos Desaparecidos**: Alertas quando uma moto não é detectada há muito tempo
+- **Manutenção Necessária**: Notificações sobre veículos que precisam de manutenção
+- **Problemas Críticos**: Alertas em tempo real sobre situações que requerem atenção imediata
+
+### 5. Detecção Automática por IA
+
+O sistema utiliza YOLOv8 (modelo de deep learning) para detectar automaticamente motocicletas em imagens:
+- Identificação automática de motos em fotos
+- Geração automática de IDs para novos veículos detectados
+- Catalogação inteligente sem necessidade de entrada manual
+
+### 6. Interface Mobile Intuitiva
+
+Foi desenvolvido um aplicativo mobile multiplataforma (iOS e Android) com:
+- Interface moderna e intuitiva
+- Suporte a temas claro/escuro
+- Multi-idioma (Português e Espanhol)
+- Notificações push para alertas críticos
+- Acesso offline quando possível
+
+### Resultado
+
+O sistema Mottu resolve completamente o problema de falta de gestão de frotas, oferecendo:
+
+- **Visibilidade Total**: Acompanhamento em tempo real de toda a frota
+- **Automação**: Redução significativa de processos manuais
+- **Inteligência**: Detecção automática e alertas inteligentes
+- **Eficiência**: Gestão centralizada e organizada de todos os dados
+- **Confiabilidade**: Sistema robusto com validações e tratamento de erros
+- **Acessibilidade**: Interface mobile disponível a qualquer momento e lugar
 ## Requisitos
 
 - Python 3.10+
