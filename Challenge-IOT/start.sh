@@ -1,3 +1,3 @@
 #!/bin/bash
-gunicorn backend:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --timeout 120
+gunicorn backend:app --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 --worker-class uvicorn.workers.UvicornWorker
 
