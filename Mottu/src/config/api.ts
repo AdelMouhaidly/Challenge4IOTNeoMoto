@@ -9,7 +9,7 @@ export const API_CONFIG = {
 
 const USE_LOCAL_PYTHON_API = true;
 
-// ⚠️ IMPORTANTE: Coloque aqui o IPv4 da sua máquina para usar em dispositivo físico
+// IMPORTANTE: Coloque aqui o IPv4 da sua máquina para usar em dispositivo físico
 const MEU_IPV4 = "26.175.45.105";
 
 export const getJavaApiUrl = () => {

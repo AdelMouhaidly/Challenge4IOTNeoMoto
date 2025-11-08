@@ -30,37 +30,6 @@ export default function DetectarMoto() {
   const { colors } = useTheme();
   const { t } = useLocalization();
 
-  const salvarLeituraIoT = async (resultadoDetecao: any) => {
-    try {
-      const apiUrl = getPythonApiUrl();
-      const totalMotos = resultadoDetecao.motos_detectadas?.length || 0;
-      const valorLeitura = totalMotos > 0 
-        ? `${totalMotos} moto(s) detectada(s) - Confiança: ${resultadoDetecao.motos_detectadas[0]?.confianca || 'N/A'}`
-        : "nenhuma moto detectada";
-
-      const response = await fetch(`${apiUrl}/leituras`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          moto_id: motoId.trim() || "MOT-01",
-          tipo: "moto",
-          valor: valorLeitura,
-        }),
-      });
-
-      if (response.ok) {
-        console.log("✅ Leitura IoT salva com sucesso!");
-      } else {
-        console.warn("⚠️ Não foi possível salvar leitura IoT");
-      }
-    } catch (error) {
-      console.error("Erro ao salvar leitura IoT:", error);
-      // Não mostrar erro para o usuário, é opcional
-    }
-  };
-
   const selecionarImagem = async () => {
     try {
       console.log("Verificando permissões existentes...");
@@ -181,9 +150,9 @@ export default function DetectarMoto() {
       console.log("Resposta da API:", data);
       setResultado(data);
 
-      // Se detectou motos, salvar como leitura IoT
+      // A API já salva automaticamente no IoT, apenas logamos
       if (data.motos_detectadas && data.motos_detectadas.length > 0) {
-        await salvarLeituraIoT(data);
+        console.log("Motos detectadas e registradas automaticamente no IoT!");
       }
     } catch (error: any) {
       console.error("Erro ao enviar imagem:", error);
@@ -291,19 +260,60 @@ export default function DetectarMoto() {
             {t("detection.detectionResult")}:
           </Text>
 
-          {resultado.motos_detectadas.length > 0 ? (
-            <Text style={[styles.mensagemSucesso, { color: colors.success }]}>
-              {t("detection.bikeDetected")}
-            </Text>
+          {resultado.motos_detectadas && resultado.motos_detectadas.length > 0 ? (
+            <>
+              <Text style={[styles.mensagemSucesso, { color: colors.success }]}>
+                {resultado.mensagem || t("detection.bikeDetected")}
+              </Text>
+              
+              {resultado.estatisticas && (
+                <View style={styles.estatisticasContainer}>
+                  <Text style={[styles.estatisticasTitulo, { color: colors.text }]}>
+                    Estatísticas:
+                  </Text>
+                  {resultado.temperatura_ambiente && (
+                    <Text style={[styles.estatisticasTexto, { color: colors.text }]}>
+                      Temperatura Ambiente: {resultado.temperatura_ambiente}
+                    </Text>
+                  )}
+                  <Text style={[styles.estatisticasTexto, { color: colors.text }]}>
+                    Total: {resultado.estatisticas.total_motos} moto(s)
+                  </Text>
+                  <Text style={[styles.estatisticasTexto, { color: colors.text }]}>
+                    Área ocupada: {resultado.estatisticas.area_total_ocupada_percent}%
+                  </Text>
+                  <Text style={[styles.estatisticasTexto, { color: colors.text }]}>
+                    Densidade: {resultado.estatisticas.densidade}
+                  </Text>
+                </View>
+              )}
+
+              {resultado.motos_detectadas.map((moto: any, index: number) => (
+                <View key={index} style={styles.motoDetalhes}>
+                  <Text style={[styles.motoTitulo, { color: colors.primary }]}>
+                    {moto.moto_id || `Moto ${index + 1}`}
+                  </Text>
+                  <Text style={[styles.motoInfo, { color: colors.text }]}>
+                    Confiança: {(moto.confianca * 100).toFixed(1)}%
+                  </Text>
+                  {moto.gps && (
+                    <Text style={[styles.motoInfo, { color: colors.text }]}>
+                      GPS: {moto.gps.latitude.toFixed(6)}, {moto.gps.longitude.toFixed(6)}
+                    </Text>
+                  )}
+                  {moto.posicao_percentual && (
+                    <Text style={[styles.motoInfo, { color: colors.text }]}>
+                      Posição: {moto.posicao_percentual.x}%, {moto.posicao_percentual.y}%
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </>
           ) : (
             <Text style={[styles.mensagemErro, { color: colors.error }]}>
               {t("detection.noBikesDetected")}
             </Text>
           )}
-
-          <Text style={[styles.resultadoTexto, { color: colors.text }]}>
-            {JSON.stringify(resultado, null, 2)}
-          </Text>
         </View>
       )}
     </ScrollView>
@@ -371,6 +381,38 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
+  },
+  estatisticasContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  estatisticasTitulo: {
+    fontWeight: "bold",
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  estatisticasTexto: {
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  motoDetalhes: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  motoTitulo: {
+    fontWeight: "bold",
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  motoInfo: {
+    fontSize: 12,
+    marginBottom: 4,
   },
   inputContainer: {
     width: "100%",

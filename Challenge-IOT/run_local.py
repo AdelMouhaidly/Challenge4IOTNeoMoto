@@ -14,13 +14,13 @@ if __name__ == "__main__":
         sys.exit(1)
     
     print("=" * 50)
-    print("🚀 Iniciando API IoT NeoMoto")
+    print("Iniciando API IoT NeoMoto")
     print("=" * 50)
-    print("\n📡 API estará disponível em:")
+    print("\nAPI estará disponível em:")
     print("   - Local: http://localhost:8000")
     print("   - Rede: http://0.0.0.0:8000")
-    print("\n📚 Documentação: http://localhost:8000/docs")
-    print("🔍 Health Check: http://localhost:8000/")
+    print("\nDocumentação: http://localhost:8000/docs")
+    print("Health Check: http://localhost:8000/")
     print("\n" + "=" * 50)
     print("Pressione Ctrl+C para parar o servidor")
     print("=" * 50 + "\n")
@@ -30,10 +30,11 @@ if __name__ == "__main__":
             "backend:app",
             host="0.0.0.0",
             port=8000,
-            reload=True,  # Auto-reload em desenvolvimento
+            reload=True,  
             log_level="info"
         )
     except KeyboardInterrupt:
-        print("\n\n✅ Servidor encerrado com sucesso!")
+        print("\n\n Servidor encerrado com sucesso!")
         sys.exit(0)
+
 
