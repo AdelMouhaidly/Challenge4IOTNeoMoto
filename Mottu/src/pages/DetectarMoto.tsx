@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   Linking,
+  TextInput,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../contexts/ThemeContext";
@@ -25,8 +26,40 @@ export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [motoId, setMotoId] = useState("MOT-01"); // ID padrão da moto
   const { colors } = useTheme();
   const { t } = useLocalization();
+
+  const salvarLeituraIoT = async (resultadoDetecao: any) => {
+    try {
+      const apiUrl = getPythonApiUrl();
+      const totalMotos = resultadoDetecao.motos_detectadas?.length || 0;
+      const valorLeitura = totalMotos > 0 
+        ? `${totalMotos} moto(s) detectada(s) - Confiança: ${resultadoDetecao.motos_detectadas[0]?.confianca || 'N/A'}`
+        : "nenhuma moto detectada";
+
+      const response = await fetch(`${apiUrl}/leituras`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          moto_id: motoId.trim() || "MOT-01",
+          tipo: "moto",
+          valor: valorLeitura,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("✅ Leitura IoT salva com sucesso!");
+      } else {
+        console.warn("⚠️ Não foi possível salvar leitura IoT");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar leitura IoT:", error);
+      // Não mostrar erro para o usuário, é opcional
+    }
+  };
 
   const selecionarImagem = async () => {
     try {
@@ -147,6 +180,11 @@ export default function DetectarMoto() {
       const data = await response.json();
       console.log("Resposta da API:", data);
       setResultado(data);
+
+      // Se detectou motos, salvar como leitura IoT
+      if (data.motos_detectadas && data.motos_detectadas.length > 0) {
+        await salvarLeituraIoT(data);
+      }
     } catch (error: any) {
       console.error("Erro ao enviar imagem:", error);
       if (error.name === "AbortError" || error.message?.includes("Aborted")) {
@@ -177,6 +215,22 @@ export default function DetectarMoto() {
       <Text style={[styles.titulo, { color: colors.primary }]}>
         {t("detection.title")}
       </Text>
+
+      <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.label, { color: colors.text }]}>
+          ID da Moto (para Monitoramento IoT):
+        </Text>
+        <TextInput
+          style={[
+            styles.input,
+            { backgroundColor: colors.background, color: colors.text },
+          ]}
+          placeholder="Ex: MOT-01"
+          placeholderTextColor={colors.textSecondary}
+          value={motoId}
+          onChangeText={setMotoId}
+        />
+      </View>
 
       <TouchableOpacity
         style={[styles.botao, { backgroundColor: colors.primary }]}
@@ -317,5 +371,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     fontSize: 16,
+  },
+  inputContainer: {
+    width: "100%",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  input: {
+    padding: 12,
+    borderRadius: 8,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
   },
 });

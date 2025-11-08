@@ -30,4 +30,5 @@ export type DrawerLista = {
   GestaoMotoristas: undefined;
   Historico: undefined;
   SobreApp: undefined;
+  MonitoramentoIoT: undefined;
 };

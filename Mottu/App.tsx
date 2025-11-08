@@ -8,7 +8,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { Menu, Home as HomeIcon, MapPin, Bike, Users, AlertTriangle, Camera, Info } from "lucide-react-native";
+import { Menu, Home as HomeIcon, MapPin, Bike, Users, AlertTriangle, Camera, Info, Radio } from "lucide-react-native";
 
 import Login from "./src/pages/Login";
 import Register from "./src/pages/Register";
@@ -23,6 +23,7 @@ import DashboardAlertas from "./src/pages/DashboardAlertas";
 import DetectarMoto from "./src/pages/DetectarMoto";
 import GestaoMotoristas from "./src/pages/GestaoMotoristas";
 import SobreApp from "./src/pages/SobreApp";
+import MonitoramentoIoT from "./src/pages/MonitoramentoIoT";
 import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import {
   LocalizationProvider,
@@ -172,6 +173,20 @@ function NavegadorComMenuLateral() {
           title: t("drawer.detection"),
           drawerIcon: ({ focused }) => (
             <Camera
+              size={24}
+              color={focused ? colors.primary : colors.textSecondary}
+            />
+          ),
+          drawerLabelStyle: { color: colors.text },
+        }}
+      />
+      <Drawer.Screen
+        name="MonitoramentoIoT"
+        component={MonitoramentoIoT}
+        options={{
+          title: t("drawer.iot"),
+          drawerIcon: ({ focused }) => (
+            <Radio
               size={24}
               color={focused ? colors.primary : colors.textSecondary}
             />
