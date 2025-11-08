@@ -15,9 +15,36 @@ Sistema de gestão de frota de motocicletas com rastreamento em tempo real, dete
 - Node.js 16+
 - Expo CLI (`npm install -g expo-cli`)
 
-## Instalação e Execução
+## Como Rodar
 
-### 1. Backend Python (FastAPI)
+### Opção 1: Usando APIs Hospedadas no Render (Recomendado)
+
+**Passo 1: Acordar as APIs (IMPORTANTE)**
+
+Antes de usar o app, acesse no navegador para ativar os serviços:
+
+- API Java: https://mottu-java-api.onrender.com/api/motos
+- API Python: https://mottu-python-api.onrender.com
+
+Aguarde 30-60 segundos para os serviços iniciarem (cold start).
+
+**Passo 2: Rodar o App Mobile**
+
+```bash
+cd Mottu
+npm install
+npx expo start
+```
+
+Escaneie o QR Code com o Expo Go ou pressione `a` para Android / `i` para iOS.
+
+**Nota**: O app já está configurado para usar as APIs do Render. Se as APIs não responderem, acesse os links novamente para reativá-las.
+
+---
+
+### Opção 2: Rodar Localmente
+
+**1. Backend Python (FastAPI)**
 
 ```bash
 cd Challenge-IOT
@@ -28,9 +55,8 @@ python run_local.py
 ```
 
 API disponível em: `http://localhost:8000`
-Documentação: `http://localhost:8000/docs`
 
-### 2. Backend Java (Spring Boot)
+**2. Backend Java (Spring Boot)**
 
 ```bash
 cd NeoMoto
@@ -38,21 +64,8 @@ cd NeoMoto
 ```
 
 API disponível em: `http://localhost:8080`
-Console H2: `http://localhost:8080/h2-console`
 
-### 3. App Mobile (React Native + Expo)
-
-```bash
-cd Mottu
-npm install
-npx expo start
-```
-
-Escaneie o QR Code com o Expo Go ou pressione `a` para Android / `i` para iOS.
-
-## Configuração das APIs
-
-### APIs Locais
+**3. Configurar App Mobile para APIs Locais**
 
 Edite `Mottu/src/config/api.ts`:
 
@@ -68,14 +81,15 @@ export const getPythonApiUrl = () => {
 
 **Para dispositivo físico**: Altere `MEU_IPV4` no arquivo `api.ts` com o IP da sua máquina.
 
-### APIs Hospedadas (Render)
+**4. Rodar App Mobile**
 
-As APIs já estão configuradas para usar:
+```bash
+cd Mottu
+npm install
+npx expo start
+```
 
-- Java: `https://mottu-java-api.onrender.com/api`
-- Python: `https://mottu-python-api.onrender.com`
-
-**Importante**: Acesse os links acima no navegador para ativar os serviços (Render coloca em sleep após 15min de inatividade).
+---
 
 ## Funcionalidades
 
@@ -134,11 +148,11 @@ Challenge4IOTNeoMoto/
     ├── src/
     │   ├── pages/          # Telas do app
     │   ├── components/     # Componentes reutilizáveis
-    │   ├── contexts/       # Contextos React
-    │   ├── services/       # Serviços (notificações)
-    │   ├── hooks/          # Hooks customizados
-    │   └── config/         # Configurações (APIs)
-    └── App.tsx             # Componente principal
+    │   ├── contexts/        # Contextos React
+    │   ├── services/        # Serviços (notificações)
+    │   ├── hooks/           # Hooks customizados
+    │   └── config/          # Configurações (APIs)
+    └── App.tsx              # Componente principal
 ```
 
 ## Autores
