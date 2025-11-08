@@ -124,7 +124,7 @@ export default function DetectarMoto() {
 
     try {
       const controller = new AbortController();
-      const timeout = isRetry ? 60000 : 180000;
+      const timeout = isRetry ? 120000 : 300000;
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const apiUrl = getApiUrl();
@@ -145,6 +145,11 @@ export default function DetectarMoto() {
       if (!response.ok) {
         const errorData = await response.text();
         console.error("Erro da API:", errorData);
+        
+        if (response.status === 502 || response.status === 503) {
+          throw new Error(`HTTP ${response.status} - Servidor em cold start. Aguarde alguns segundos e tente novamente.`);
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -174,10 +179,23 @@ export default function DetectarMoto() {
       if (error.name === "AbortError" || error.message?.includes("Aborted")) {
         Alert.alert(
           t("detection.errorTitle"),
-          t("detection.errorTimeout") + "\n\n" + t("detection.coldStartMessage"),
+          "Tempo de conexão esgotado. A API pode estar em cold start (Render). Aguarde 30 segundos e tente novamente.",
           [
             { text: "Cancelar", style: "cancel" },
-            { text: "Tentar Novamente", onPress: () => enviarImagem(true) }
+            { text: "Tentar Novamente", onPress: () => {
+              setTimeout(() => enviarImagem(true), 30000);
+            }}
+          ]
+        );
+      } else if (error.message?.includes("502") || error.message?.includes("503") || error.message?.includes("cold start")) {
+        Alert.alert(
+          t("detection.errorTitle"),
+          "A API está iniciando (cold start). Aguarde 30 segundos e tente novamente.",
+          [
+            { text: "Cancelar", style: "cancel" },
+            { text: "Aguardar e Tentar", onPress: () => {
+              setTimeout(() => enviarImagem(true), 30000);
+            }}
           ]
         );
       } else if (error.message?.includes("Network request failed")) {

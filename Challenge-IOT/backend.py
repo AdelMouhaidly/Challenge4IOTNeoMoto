@@ -76,13 +76,25 @@ class Estatistica(BaseModel):
 
 leituras_db: List[Leitura] = []
 _next_id = 1
+model = None
 
-try:
-    model = YOLO("yolov8n.pt")
-    print("Modelo YOLO carregado com sucesso")
-except Exception as e:
-    print(f"Erro ao carregar modelo YOLO: {e}")
-    model = None
+def carregar_modelo_yolo():
+    global model
+    if model is None:
+        try:
+            print("Carregando modelo YOLO...")
+            model = YOLO("yolov8n.pt")
+            print("Modelo YOLO carregado com sucesso")
+        except Exception as e:
+            print(f"Erro ao carregar modelo YOLO: {e}")
+            model = None
+    return model
+
+@app.on_event("startup")
+async def startup_event():
+    print("Iniciando API...")
+    print("Modelo YOLO será carregado sob demanda")
+    print("API pronta para receber requisições")
 
 
 def _proximo_id() -> int:
@@ -389,10 +401,8 @@ def obter_estatisticas():
 
 @app.post("/detectar-moto", tags=["detecção"])
 async def detectar_moto(file: UploadFile = File(...)):
-    """
-    Detecta motos em uma imagem usando YOLOv8
-    """
-    if model is None:
+    modelo_atual = carregar_modelo_yolo()
+    if modelo_atual is None:
         return {
             "erro": "Modelo YOLO não disponível",
             "motos_detectadas": []
@@ -414,7 +424,7 @@ async def detectar_moto(file: UploadFile = File(...)):
         temperatura_base = 20.0 + (brilho_medio / 255.0) * 20.0
         temperatura = round(temperatura_base, 1)
         
-        results = model(img, verbose=False)
+        results = modelo_atual(img, verbose=False)
         motos_detectadas = []
         altura_img, largura_img = img.shape[:2]
         area_total_imagem = altura_img * largura_img
@@ -423,7 +433,7 @@ async def detectar_moto(file: UploadFile = File(...)):
         for idx, r in enumerate(results):
             for box in r.boxes:
                 cls = int(box.cls[0].item())
-                label = model.names[cls]
+                label = modelo_atual.names[cls]
                 
                 if label.lower() in ["motorbike", "moto", "motorcycle"]:
                     confianca = float(box.conf[0].item())
