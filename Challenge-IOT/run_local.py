@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""
-Script para iniciar a API IoT localmente
-"""
 import uvicorn
 import sys
 import os
 
 if __name__ == "__main__":
-    # Verifica se estamos no diretório correto
     if not os.path.exists("backend.py"):
         print("Erro: backend.py não encontrado!")
         print("Execute este script na pasta Challenge-IOT")
@@ -30,7 +26,7 @@ if __name__ == "__main__":
             "backend:app",
             host="0.0.0.0",
             port=8000,
-            reload=True,  
+            reload=True,
             log_level="info"
         )
     except KeyboardInterrupt:

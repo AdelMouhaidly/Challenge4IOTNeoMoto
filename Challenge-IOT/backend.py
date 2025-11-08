@@ -16,14 +16,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # se quiser travar depois, coloque o IP/porta do app
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-TipoLeitura = Literal["estado", "moto", "temperatura", "gps"]
+TipoLeitura = Literal["estado", "moto", "temperatura", "gps", "placa", "marca"]
 
 
 class LeituraCreate(BaseModel):
@@ -31,7 +31,7 @@ class LeituraCreate(BaseModel):
     tipo: TipoLeitura = Field(
         ...,
         example="estado",
-        description='Pode ser "estado", "temperatura", "gps" ou "moto" (visão computacional)',
+        description='Pode ser "estado", "temperatura", "gps", "moto", "placa" ou "marca"',
     )
     valor: str = Field(..., example="em uso")
 
@@ -46,14 +46,37 @@ class MotoResumo(BaseModel):
     estado: Optional[str] = None
     gps: Optional[str] = None
     temperatura: Optional[str] = None
+    placa: Optional[str] = None
+    marca: Optional[str] = None
+    monitoramento_iot: bool = False  # Indica se a moto tem monitoramento IoT ativo
+    status_monitoramento: Optional[str] = None  # "online", "offline", "desaparecida"
+    tempo_offline: Optional[int] = None  # Tempo em segundos sem sinal
     ultima_atualizacao: Optional[datetime] = None
+
+
+class Alerta(BaseModel):
+    id: str
+    tipo: str  # "temperatura_alta", "gps_offline", "moto_inativa", "manutencao"
+    moto_id: str
+    severidade: str  # "baixa", "media", "alta"
+    mensagem: str
+    timestamp: datetime
+
+
+class Estatistica(BaseModel):
+    total_motos: int
+    motos_em_uso: int
+    motos_paradas: int
+    motos_manutencao: int
+    alertas_ativos: int
+    temperatura_media: Optional[float] = None
+    ultima_atualizacao: datetime
 
 
 
 leituras_db: List[Leitura] = []
 _next_id = 1
 
-# Carregar modelo YOLO para detecção de motos
 try:
     model = YOLO("yolov8n.pt")
     print("Modelo YOLO carregado com sucesso")
@@ -154,14 +177,17 @@ def deletar_leitura(leitura_id: int):
 def listar_motos_estado():
 
     resumo: Dict[str, MotoResumo] = {}
-
+    agora = datetime.utcnow()
 
     for l in leituras_db:
         if l.moto_id not in resumo:
-            resumo[l.moto_id] = MotoResumo(moto_id=l.moto_id)
+            resumo[l.moto_id] = MotoResumo(
+                moto_id=l.moto_id,
+                monitoramento_iot=True,
+                status_monitoramento="online"
+            )
 
         moto = resumo[l.moto_id]
-
 
         if l.tipo in ("estado", "moto"):
             moto.estado = l.valor
@@ -171,11 +197,194 @@ def listar_motos_estado():
 
         elif l.tipo == "temperatura":
             moto.temperatura = l.valor
+        
+        elif l.tipo == "placa":
+            moto.placa = l.valor
+        
+        elif l.tipo == "marca":
+            moto.marca = l.valor
 
         moto.ultima_atualizacao = l.timestamp
 
+    for moto_id, moto in resumo.items():
+        if moto.estado and "desaparecida" in moto.estado.lower():
+            moto.status_monitoramento = "desaparecida"
+            if moto.ultima_atualizacao:
+                tempo_sem_atualizacao = (agora - moto.ultima_atualizacao).total_seconds()
+                moto.tempo_offline = int(tempo_sem_atualizacao)
+            else:
+                moto.tempo_offline = 0
+        elif moto.ultima_atualizacao:
+            tempo_sem_atualizacao = (agora - moto.ultima_atualizacao).total_seconds()
+            moto.tempo_offline = int(tempo_sem_atualizacao)
+            
+            if tempo_sem_atualizacao > 1800:
+                moto.status_monitoramento = "desaparecida"
+                moto.estado = "DESAPARECIDA"
+            elif tempo_sem_atualizacao > 300:
+                moto.status_monitoramento = "offline"
+            else:
+                moto.status_monitoramento = "online"
 
     return list(resumo.values())
+
+
+@app.get("/alertas", response_model=List[Alerta], tags=["alertas"])
+def listar_alertas(criticos_apenas: bool = Query(False, description="Retorna apenas alertas críticos")):
+    """
+    Gera alertas baseados nas leituras IoT:
+    - Temperatura alta (> 35°C)
+    - GPS offline (sem leitura GPS há mais de 30s)
+    - Moto inativa (parada há muito tempo)
+    - Moto desaparecida (GPS offline por muito tempo)
+    
+    Use criticos_apenas=true para retornar apenas alertas de alta severidade
+    """
+    alertas = []
+    agora = datetime.utcnow()
+    
+    motos_leituras: Dict[str, Dict[str, List[Leitura]]] = {}
+    
+    for leitura in leituras_db:
+        if leitura.moto_id not in motos_leituras:
+            motos_leituras[leitura.moto_id] = {"estado": [], "temperatura": [], "gps": [], "moto": []}
+        
+        if leitura.tipo in motos_leituras[leitura.moto_id]:
+            motos_leituras[leitura.moto_id][leitura.tipo].append(leitura)
+    
+    alerta_id = 1
+    for moto_id, leituras_por_tipo in motos_leituras.items():
+        estado_desaparecida = False
+        if leituras_por_tipo["estado"]:
+            ultimo_estado = leituras_por_tipo["estado"][-1]
+            if "desaparecida" in ultimo_estado.valor.lower():
+                estado_desaparecida = True
+                tempo_desaparecida = (agora - ultimo_estado.timestamp).total_seconds()
+                alertas.append(Alerta(
+                    id=f"ALT-{alerta_id}",
+                    tipo="moto_desaparecida",
+                    moto_id=moto_id,
+                    severidade="alta",
+                    mensagem=f"MOTO DESAPARECIDA - Estado cadastrado como desaparecida há {int(tempo_desaparecida/60)} minutos",
+                    timestamp=ultimo_estado.timestamp
+                ))
+                alerta_id += 1
+        
+        if leituras_por_tipo["temperatura"]:
+            ultima_temp = leituras_por_tipo["temperatura"][-1]
+            try:
+                temp_valor = float(ultima_temp.valor.replace("ºC", "").replace("°C", "").strip())
+                if temp_valor > 35:
+                    alertas.append(Alerta(
+                        id=f"ALT-{alerta_id}",
+                        tipo="temperatura_alta",
+                        moto_id=moto_id,
+                        severidade="alta" if temp_valor > 38 else "media",
+                        mensagem=f"Temperatura elevada: {temp_valor}°C. Requer verificação!",
+                        timestamp=ultima_temp.timestamp
+                    ))
+                    alerta_id += 1
+            except ValueError:
+                pass
+        
+        if not estado_desaparecida and leituras_por_tipo["gps"]:
+            ultima_gps = leituras_por_tipo["gps"][-1]
+            tempo_sem_gps = (agora - ultima_gps.timestamp).total_seconds()
+            if tempo_sem_gps > 300:
+                if tempo_sem_gps > 1800:
+                    alertas.append(Alerta(
+                        id=f"ALT-{alerta_id}",
+                        tipo="moto_desaparecida",
+                        moto_id=moto_id,
+                        severidade="alta",
+                        mensagem=f"MOTO DESAPARECIDA - Sem sinal GPS há {int(tempo_sem_gps/60)} minutos",
+                        timestamp=agora
+                    ))
+                    alerta_id += 1
+                else:
+                    alertas.append(Alerta(
+                        id=f"ALT-{alerta_id}",
+                        tipo="gps_offline",
+                        moto_id=moto_id,
+                        severidade="alta",
+                        mensagem=f"Sem sinal GPS há {int(tempo_sem_gps/60)} minutos. Possível problema!",
+                        timestamp=agora
+                    ))
+                    alerta_id += 1
+        
+        if not estado_desaparecida and leituras_por_tipo["estado"]:
+            ultimo_estado = leituras_por_tipo["estado"][-1]
+            if "manutencao" in ultimo_estado.valor.lower() or "manutenção" in ultimo_estado.valor.lower():
+                tempo_manutencao = (agora - ultimo_estado.timestamp).total_seconds() / 3600
+                alertas.append(Alerta(
+                    id=f"ALT-{alerta_id}",
+                    tipo="manutencao",
+                    moto_id=moto_id,
+                    severidade="media" if tempo_manutencao < 24 else "alta",
+                    mensagem=f"Em manutenção há {int(tempo_manutencao)} horas.",
+                    timestamp=ultimo_estado.timestamp
+                ))
+                alerta_id += 1
+            elif "parada" in ultimo_estado.valor.lower():
+                tempo_parada = (agora - ultimo_estado.timestamp).total_seconds() / 3600
+                if tempo_parada > 48:
+                    alertas.append(Alerta(
+                        id=f"ALT-{alerta_id}",
+                        tipo="moto_inativa",
+                        moto_id=moto_id,
+                        severidade="baixa",
+                        mensagem=f"Moto parada há {int(tempo_parada)} horas. Verificar se há problema.",
+                        timestamp=ultimo_estado.timestamp
+                    ))
+                    alerta_id += 1
+    
+    if criticos_apenas:
+        alertas = [a for a in alertas if a.severidade == "alta"]
+    
+    return sorted(alertas, key=lambda a: a.timestamp, reverse=True)
+
+
+@app.get("/estatisticas", response_model=Estatistica, tags=["estatisticas"])
+def obter_estatisticas():
+    """
+    Retorna estatísticas gerais do sistema
+    """
+    motos_resumo = listar_motos_estado()
+    alertas = listar_alertas()
+    
+    motos_em_uso = 0
+    motos_paradas = 0
+    motos_manutencao = 0
+    temperaturas = []
+    
+    for moto in motos_resumo:
+        if moto.estado:
+            estado_lower = moto.estado.lower()
+            if "uso" in estado_lower:
+                motos_em_uso += 1
+            elif "parada" in estado_lower or "disponível" in estado_lower:
+                motos_paradas += 1
+            elif "manutencao" in estado_lower or "manutenção" in estado_lower:
+                motos_manutencao += 1
+        
+        if moto.temperatura:
+            try:
+                temp_valor = float(moto.temperatura.replace("ºC", "").replace("°C", "").strip())
+                temperaturas.append(temp_valor)
+            except ValueError:
+                pass
+    
+    temp_media = sum(temperaturas) / len(temperaturas) if temperaturas else None
+    
+    return Estatistica(
+        total_motos=len(motos_resumo),
+        motos_em_uso=motos_em_uso,
+        motos_paradas=motos_paradas,
+        motos_manutencao=motos_manutencao,
+        alertas_ativos=len(alertas),
+        temperatura_media=round(temp_media, 1) if temp_media else None,
+        ultima_atualizacao=datetime.utcnow()
+    )
 
 
 @app.post("/detectar-moto", tags=["detecção"])
@@ -190,7 +399,6 @@ async def detectar_moto(file: UploadFile = File(...)):
         }
     
     try:
-        # Ler a imagem
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -201,16 +409,11 @@ async def detectar_moto(file: UploadFile = File(...)):
                 "motos_detectadas": []
             }
         
-        # Calcular temperatura baseada na imagem (análise de brilho/cor)
-        # Converte para escala de cinza e calcula temperatura simulada
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         brilho_medio = np.mean(img_gray)
-        # Temperatura simulada: 20-40°C baseada no brilho da imagem
-        # Imagens mais claras = temperatura mais alta (simula sol)
         temperatura_base = 20.0 + (brilho_medio / 255.0) * 20.0
         temperatura = round(temperatura_base, 1)
         
-        # Detectar motos
         results = model(img, verbose=False)
         motos_detectadas = []
         altura_img, largura_img = img.shape[:2]
@@ -222,37 +425,39 @@ async def detectar_moto(file: UploadFile = File(...)):
                 cls = int(box.cls[0].item())
                 label = model.names[cls]
                 
-                # Verificar se é uma moto
                 if label.lower() in ["motorbike", "moto", "motorcycle"]:
                     confianca = float(box.conf[0].item())
                     xyxy = box.xyxy[0].tolist()
                     
-                    # Calcular centro da moto
                     centro_x = (xyxy[0] + xyxy[2]) / 2
                     centro_y = (xyxy[1] + xyxy[3]) / 2
                     
-                    # Calcular área ocupada pela moto
                     largura_moto = xyxy[2] - xyxy[0]
                     altura_moto = xyxy[3] - xyxy[1]
                     area_moto = largura_moto * altura_moto
                     area_total_motos += area_moto
                     
-                    # Calcular posição relativa (0-100%)
                     posicao_x_percent = (centro_x / largura_img) * 100
                     posicao_y_percent = (centro_y / altura_img) * 100
                     
-                    # Gerar coordenadas GPS simuladas baseadas na posição na imagem
-                    # Usa a posição na imagem para criar coordenadas únicas
                     lat_base = -23.5505
                     lon_base = -46.6333
-                    # Variação baseada na posição na imagem (simula diferentes áreas do pátio)
-                    lat_offset = (posicao_y_percent / 100) * 0.01  # Variação de ~0.01 graus
+                    lat_offset = (posicao_y_percent / 100) * 0.01
                     lon_offset = (posicao_x_percent / 100) * 0.01
                     gps_lat = lat_base + lat_offset
                     gps_lon = lon_base + lon_offset
                     
-                    # Gerar ID único baseado na posição
                     moto_id = f"MOT-DET-{int(posicao_x_percent)}-{int(posicao_y_percent)}"
+                    
+                    import random
+                    import string
+                    
+                    letras = ''.join(random.choices(string.ascii_uppercase, k=3))
+                    numeros = ''.join(random.choices(string.digits, k=4))
+                    placa_mockada = f"{letras}-{numeros}"
+                    
+                    marcas = ["Honda", "Yamaha", "Suzuki", "Kawasaki", "BMW", "Harley-Davidson", "Ducati", "KTM"]
+                    marca_mockada = random.choice(marcas)
                     
                     moto_info = {
                         "classe": label,
@@ -280,11 +485,12 @@ async def detectar_moto(file: UploadFile = File(...)):
                             "longitude": round(gps_lon, 6),
                         },
                         "moto_id": moto_id,
+                        "placa": placa_mockada,
+                        "marca": marca_mockada,
                     }
                     
                     motos_detectadas.append(moto_info)
                     
-                    # Salvar automaticamente no IoT
                     try:
                         nova_leitura = Leitura(
                             id=_proximo_id(),
@@ -295,7 +501,6 @@ async def detectar_moto(file: UploadFile = File(...)):
                         )
                         leituras_db.append(nova_leitura)
                         
-                        # Salvar GPS
                         leitura_gps = Leitura(
                             id=_proximo_id(),
                             moto_id=moto_id,
@@ -305,7 +510,6 @@ async def detectar_moto(file: UploadFile = File(...)):
                         )
                         leituras_db.append(leitura_gps)
                         
-                        # Salvar estado baseado na confiança
                         estado = "em uso" if confianca > 0.7 else "parada"
                         leitura_estado = Leitura(
                             id=_proximo_id(),
@@ -316,7 +520,6 @@ async def detectar_moto(file: UploadFile = File(...)):
                         )
                         leituras_db.append(leitura_estado)
                         
-                        # Salvar temperatura baseada na imagem
                         leitura_temperatura = Leitura(
                             id=_proximo_id(),
                             moto_id=moto_id,
@@ -326,10 +529,27 @@ async def detectar_moto(file: UploadFile = File(...)):
                         )
                         leituras_db.append(leitura_temperatura)
                         
+                        leitura_placa = Leitura(
+                            id=_proximo_id(),
+                            moto_id=moto_id,
+                            tipo="placa",
+                            valor=placa_mockada,
+                            timestamp=datetime.utcnow(),
+                        )
+                        leituras_db.append(leitura_placa)
+                        
+                        leitura_marca = Leitura(
+                            id=_proximo_id(),
+                            moto_id=moto_id,
+                            tipo="marca",
+                            valor=marca_mockada,
+                            timestamp=datetime.utcnow(),
+                        )
+                        leituras_db.append(leitura_marca)
+                        
                     except Exception as e:
                         print(f"Erro ao salvar leitura IoT: {e}")
         
-        # Calcular estatísticas
         densidade = (area_total_motos / area_total_imagem) * 100 if area_total_imagem > 0 else 0
         estatisticas = {
             "total_motos": len(motos_detectadas),

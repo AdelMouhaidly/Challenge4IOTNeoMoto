@@ -18,7 +18,7 @@ import { Activity, MapPin, Thermometer, Eye, Send, RefreshCw, Edit, Trash2 } fro
 interface Leitura {
   id: number;
   moto_id: string;
-  tipo: "estado" | "moto" | "temperatura" | "gps";
+  tipo: "estado" | "moto" | "temperatura" | "gps" | "placa" | "marca";
   valor: string;
   timestamp: string;
 }
@@ -28,6 +28,11 @@ interface MotoResumo {
   estado?: string;
   gps?: string;
   temperatura?: string;
+  placa?: string;
+  marca?: string;
+  monitoramento_iot: boolean;
+  status_monitoramento?: string;
+  tempo_offline?: number;
   ultima_atualizacao?: string;
 }
 
@@ -40,45 +45,42 @@ export default function MonitoramentoIoT() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "leituras" | "teste">("dashboard");
 
-  // Formulário de teste
   const [motoId, setMotoId] = useState("");
-  const [tipoLeitura, setTipoLeitura] = useState<"estado" | "moto" | "temperatura" | "gps">("estado");
+  const [tipoLeitura, setTipoLeitura] = useState<"estado" | "moto" | "temperatura" | "gps" | "placa" | "marca">("estado");
   const [valorLeitura, setValorLeitura] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-  // Filtros
   const [filtroMoto, setFiltroMoto] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState<"" | "estado" | "moto" | "temperatura" | "gps">("");
+  const [filtroTipo, setFiltroTipo] = useState<"" | "estado" | "moto" | "temperatura" | "gps" | "placa" | "marca">("");
 
-  // Edição
   const [editandoLeitura, setEditandoLeitura] = useState<number | string | null>(null);
   const [editMotoId, setEditMotoId] = useState("");
-  const [editTipo, setEditTipo] = useState<"estado" | "moto" | "temperatura" | "gps">("estado");
+  const [editTipo, setEditTipo] = useState<"estado" | "moto" | "temperatura" | "gps" | "placa" | "marca">("estado");
   const [editValor, setEditValor] = useState("");
   const [editLeituraId, setEditLeituraId] = useState<number | null>(null);
 
   useEffect(() => {
     carregarDados();
     const interval = setInterval(() => {
-      carregarDados();
-    }, 10000); // Atualiza a cada 10 segundos
+      carregarDados(true);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const carregarDados = async () => {
+  const carregarDados = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) {
+        setLoading(true);
+      }
       const apiUrl = getPythonApiUrl();
       
-      // Carregar estado das motos
       const responseMotos = await fetch(`${apiUrl}/motos-estado`);
       if (responseMotos.ok) {
         const dadosMotos = await responseMotos.json();
         setMotos(dadosMotos);
       }
 
-      // Carregar leituras
       let urlLeituras = `${apiUrl}/leituras`;
       const params = new URLSearchParams();
       if (filtroMoto) params.append("moto_id", filtroMoto);
@@ -93,14 +95,27 @@ export default function MonitoramentoIoT() {
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
-      setLoading(false);
+      if (!isRefresh) {
+        setLoading(false);
+      }
       setRefreshing(false);
     }
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    carregarDados();
+    carregarDados(true);
+  };
+
+  const gerarGPSAleatorio = () => {
+    const latBase = -23.5505;
+    const lonBase = -46.6333;
+    const variacao = 0.01;
+    
+    const lat = latBase + (Math.random() - 0.5) * variacao;
+    const lon = lonBase + (Math.random() - 0.5) * variacao;
+    
+    return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
   };
 
   const enviarLeitura = async () => {
@@ -125,6 +140,20 @@ export default function MonitoramentoIoT() {
       });
 
       if (response.ok) {
+        if (tipoLeitura === "estado") {
+          const gpsResponse = await fetch(`${apiUrl}/leituras`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              moto_id: motoId.trim(),
+              tipo: "gps",
+              valor: gerarGPSAleatorio(),
+            }),
+          });
+        }
+        
         Alert.alert(t("iot.successTitle"), t("iot.successSend"));
         setMotoId("");
         setValorLeitura("");
@@ -148,7 +177,6 @@ export default function MonitoramentoIoT() {
   };
 
   const iniciarEdicaoMoto = async (motoId: string, tipo: "estado" | "temperatura" | "gps", valor: string) => {
-    // Buscar a leitura mais recente deste tipo para esta moto
     try {
       const apiUrl = getPythonApiUrl();
       const response = await fetch(`${apiUrl}/leituras?moto_id=${motoId}&tipo=${tipo}`);
@@ -162,7 +190,6 @@ export default function MonitoramentoIoT() {
           setEditTipo(tipo);
           setEditValor(valor);
         } else {
-          // Se não existe, criar nova
           setEditandoLeitura(`${motoId}-${tipo}`);
           setEditLeituraId(null);
           setEditMotoId(motoId);
@@ -188,6 +215,75 @@ export default function MonitoramentoIoT() {
     setEditValor("");
   };
 
+  const deletarMoto = async (motoId: string) => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      `Tem certeza que deseja deletar todas as leituras da moto ${motoId}? Esta ação não pode ser desfeita.`,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Deletar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const apiUrl = getPythonApiUrl();
+              const responseLeituras = await fetch(`${apiUrl}/leituras?moto_id=${motoId}`);
+              
+              if (responseLeituras.ok) {
+                const leituras: Leitura[] = await responseLeituras.json();
+                
+                let deletadas = 0;
+                let erros = 0;
+                
+                for (const leitura of leituras) {
+                  try {
+                    const deleteResponse = await fetch(`${apiUrl}/leituras/${leitura.id}`, {
+                      method: "DELETE"
+                    });
+                    
+                    if (deleteResponse.ok) {
+                      deletadas++;
+                    } else {
+                      erros++;
+                    }
+                  } catch (error) {
+                    erros++;
+                  }
+                }
+                
+                if (deletadas > 0) {
+                  Alert.alert(
+                    "Sucesso",
+                    `${deletadas} leitura(s) da moto ${motoId} foram deletadas com sucesso.`
+                  );
+                  carregarDados();
+                } else if (erros > 0) {
+                  Alert.alert(
+                    "Erro",
+                    "Não foi possível deletar as leituras. Tente novamente."
+                  );
+                } else {
+                  Alert.alert(
+                    "Aviso",
+                    "Nenhuma leitura encontrada para esta moto."
+                  );
+                }
+              } else {
+                Alert.alert("Erro", "Não foi possível buscar as leituras da moto.");
+              }
+            } catch (error) {
+              console.error("Erro ao deletar moto:", error);
+              Alert.alert("Erro", "Ocorreu um erro ao deletar a moto. Tente novamente.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const salvarEdicao = async () => {
     if (!editMotoId.trim() || !editValor.trim()) {
       Alert.alert(t("iot.errorTitle"), t("iot.errorEmptyFields"));
@@ -197,7 +293,6 @@ export default function MonitoramentoIoT() {
     try {
       const apiUrl = getPythonApiUrl();
       
-      // Se tem ID, atualiza. Se não, cria nova
       if (editLeituraId !== null) {
         const response = await fetch(`${apiUrl}/leituras/${editLeituraId}`, {
           method: "PUT",
@@ -219,7 +314,6 @@ export default function MonitoramentoIoT() {
           throw new Error("Erro ao atualizar leitura");
         }
       } else {
-        // Criar nova leitura
         const response = await fetch(`${apiUrl}/leituras`, {
           method: "POST",
           headers: {
@@ -294,19 +388,84 @@ export default function MonitoramentoIoT() {
         return <Thermometer size={20} color="#FF6B6B" />;
       case "gps":
         return <MapPin size={20} color="#4ECDC4" />;
+      case "placa":
+        return <Activity size={20} color="#9B59B6" />;
+      case "marca":
+        return <Activity size={20} color="#E67E22" />;
       default:
         return <Eye size={20} color={colors.primary} />;
     }
   };
 
-  const obterCorEstado = (estado?: string) => {
+  const obterCorTipo = (tipo: string) => {
+    switch (tipo) {
+      case "estado":
+        return "#4ECDC4";
+      case "moto":
+        return "#95E1D3";
+      case "temperatura":
+        return "#FF6B6B";
+      case "gps":
+        return "#FFD93D";
+      case "placa":
+        return "#9B59B6";
+      case "marca":
+        return "#E67E22";
+      default:
+        return colors.primary;
+    }
+  };
+
+  const obterCorEstado = (estado?: string, statusMonitoramento?: string) => {
+    if (statusMonitoramento === "desaparecida") return "#FF0000";
+    if (statusMonitoramento === "offline") return "#FF6B6B";
+    
     if (!estado) return colors.textSecondary;
     const estadoLower = estado.toLowerCase();
+    if (estadoLower.includes("desaparecida")) return "#FF0000";
     if (estadoLower.includes("em uso") || estadoLower.includes("uso")) return "#4ECDC4";
     if (estadoLower.includes("parada") || estadoLower.includes("disponível")) return "#95E1D3";
     if (estadoLower.includes("manutenção") || estadoLower.includes("manutencao")) return "#FF6B6B";
     return colors.textSecondary;
   };
+
+  const obterTextoStatusMonitoramento = (status?: string, tempoOffline?: number, estado?: string) => {
+    if (status === "desaparecida") {
+      const minutos = tempoOffline ? Math.floor(tempoOffline / 60) : 0;
+      return `DESAPARECIDA - ${minutos} minutos sem sinal`;
+    }
+    if (estado && (estado.toLowerCase().includes("manutencao") || estado.toLowerCase().includes("manutenção"))) {
+      return "EM MANUTENÇÃO";
+    }
+    return "";
+  };
+
+  const deveMostrarAlerta = (moto: MotoResumo): boolean => {
+    if (!moto.monitoramento_iot || !moto.status_monitoramento) return false;
+    
+    if (moto.status_monitoramento === "desaparecida") return true;
+    
+    if (moto.estado && (moto.estado.toLowerCase().includes("manutencao") || moto.estado.toLowerCase().includes("manutenção"))) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  const agruparLeiturasPorMoto = () => {
+    const grupos: { [key: string]: Leitura[] } = {};
+    
+    leituras.forEach(leitura => {
+      if (!grupos[leitura.moto_id]) {
+        grupos[leitura.moto_id] = [];
+      }
+      grupos[leitura.moto_id].push(leitura);
+    });
+    
+    return grupos;
+  };
+
+  const leiturasAgrupadas = agruparLeiturasPorMoto();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -323,7 +482,6 @@ export default function MonitoramentoIoT() {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[
@@ -385,7 +543,6 @@ export default function MonitoramentoIoT() {
           <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
         )}
 
-        {/* Tab Dashboard */}
         {activeTab === "dashboard" && (
           <View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -428,7 +585,7 @@ export default function MonitoramentoIoT() {
                           Tipo de Leitura
                         </Text>
                         <View style={styles.typeButtons}>
-                          {(["estado", "temperatura", "gps", "moto"] as const).map((tipo) => (
+                          {(["estado", "temperatura", "gps", "moto", "placa", "marca"] as const).map((tipo) => (
                             <TouchableOpacity
                               key={tipo}
                               style={[
@@ -463,6 +620,8 @@ export default function MonitoramentoIoT() {
                             editTipo === "estado" ? "Ex: em uso, parada" :
                             editTipo === "temperatura" ? "Ex: 25.5 ºC" :
                             editTipo === "gps" ? "Ex: -23.55, -46.63" :
+                            editTipo === "placa" ? "Ex: ABC-1234" :
+                            editTipo === "marca" ? "Ex: Honda, Yamaha" :
                             "Ex: detectada"
                           }
                           placeholderTextColor={colors.textSecondary}
@@ -489,15 +648,23 @@ export default function MonitoramentoIoT() {
                     ) : (
                       <>
                         <View style={styles.motoHeader}>
-                          <Text style={[styles.motoId, { color: colors.primary }]}>
-                            {moto.moto_id}
-                          </Text>
+                          <View style={styles.motoHeaderLeft}>
+                            <Text style={[styles.motoId, { color: colors.primary }]}>
+                              {moto.moto_id}
+                            </Text>
+                            {moto.monitoramento_iot && (
+                              <View style={[styles.iotBadge, { backgroundColor: "#4ECDC4" }]}>
+                                <Activity size={10} color="#fff" />
+                                <Text style={styles.iotText}>IoT</Text>
+                              </View>
+                            )}
+                          </View>
                           <View style={styles.motoHeaderRight}>
                             {moto.estado && (
                               <View
                                 style={[
                                   styles.estadoBadge,
-                                  { backgroundColor: obterCorEstado(moto.estado) },
+                                  { backgroundColor: obterCorEstado(moto.estado, moto.status_monitoramento) },
                                 ]}
                               >
                                 <Text style={styles.estadoText}>{moto.estado}</Text>
@@ -509,8 +676,36 @@ export default function MonitoramentoIoT() {
                             >
                               <Edit size={18} color={colors.primary} />
                             </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => deletarMoto(moto.moto_id)}
+                              style={[styles.actionButton, styles.deleteButton]}
+                            >
+                              <Trash2 size={18} color="#FF6B6B" />
+                            </TouchableOpacity>
                           </View>
                         </View>
+
+                        {deveMostrarAlerta(moto) && (
+                          <View style={[
+                            styles.statusMonitoramento,
+                            {
+                              backgroundColor: 
+                                moto.status_monitoramento === "desaparecida" ? "#FFE6E6" :
+                                "#FFF9E6"
+                            }
+                          ]}>
+                            <Text style={[
+                              styles.statusMonitoramentoText,
+                              {
+                                color:
+                                  moto.status_monitoramento === "desaparecida" ? "#FF0000" :
+                                  "#FF6B6B"
+                              }
+                            ]}>
+                              {obterTextoStatusMonitoramento(moto.status_monitoramento, moto.tempo_offline, moto.estado)}
+                            </Text>
+                          </View>
+                        )}
 
                         <View style={styles.motoInfo}>
                           {moto.temperatura && (
@@ -557,14 +752,39 @@ export default function MonitoramentoIoT() {
           </View>
         )}
 
-        {/* Tab Leituras */}
         {activeTab === "leituras" && (
           <View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               {t("iot.readingsHistory")}
             </Text>
 
-            {/* Filtros */}
+            <View style={[styles.legendaContainer, { backgroundColor: colors.surface }]}>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#4ECDC4" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>Estado</Text>
+              </View>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#95E1D3" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>Detecção</Text>
+              </View>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#FF6B6B" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>Temperatura</Text>
+              </View>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#FFD93D" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>GPS</Text>
+              </View>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#9B59B6" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>Placa</Text>
+              </View>
+              <View style={styles.legendaItem}>
+                <View style={[styles.legendaDot, { backgroundColor: "#E67E22" }]} />
+                <Text style={[styles.legendaText, { color: colors.text }]}>Marca</Text>
+              </View>
+            </View>
+
             <View style={styles.filters}>
               <TextInput
                 style={[
@@ -591,10 +811,32 @@ export default function MonitoramentoIoT() {
                 </Text>
               </View>
             ) : (
-              leituras.map((leitura) => (
+              Object.keys(leiturasAgrupadas).map((motoId) => (
+                <View key={motoId} style={styles.motoGroup}>
+                  <View style={[styles.motoGroupHeader, { backgroundColor: colors.primary }]}>
+                    <View style={styles.motoGroupHeaderLeft}>
+                      <Activity size={20} color="#fff" />
+                      <Text style={styles.motoGroupTitle}>{motoId}</Text>
+                    </View>
+                    <View style={styles.motoGroupBadge}>
+                      <Text style={styles.motoGroupCount}>
+                        {leiturasAgrupadas[motoId].length} leituras
+                      </Text>
+                    </View>
+                  </View>
+
+                  {leiturasAgrupadas[motoId].map((leitura, index) => (
                 <View
                   key={leitura.id}
-                  style={[styles.leituraCard, { backgroundColor: colors.surface }]}
+                  style={[
+                    styles.leituraCard, 
+                    { 
+                      backgroundColor: colors.surface,
+                      borderLeftColor: obterCorTipo(leitura.tipo)
+                    },
+                    index === 0 && styles.firstLeituraCard,
+                    index === leiturasAgrupadas[motoId].length - 1 && styles.lastLeituraCard
+                  ]}
                 >
                   {editandoLeitura === leitura.id ? (
                     <View>
@@ -609,7 +851,7 @@ export default function MonitoramentoIoT() {
                         onChangeText={setEditMotoId}
                       />
                       <View style={styles.typeButtons}>
-                        {(["estado", "temperatura", "gps", "moto"] as const).map((tipo) => (
+                        {(["estado", "temperatura", "gps", "moto", "placa", "marca"] as const).map((tipo) => (
                           <TouchableOpacity
                             key={tipo}
                             style={[
@@ -665,9 +907,6 @@ export default function MonitoramentoIoT() {
                           <Text style={[styles.leituraTipo, { color: colors.primary }]}>
                             {leitura.tipo.toUpperCase()}
                           </Text>
-                          <Text style={[styles.leituraMoto, { color: colors.textSecondary }]}>
-                            {leitura.moto_id}
-                          </Text>
                         </View>
                         <View style={styles.leituraActions}>
                           <TouchableOpacity
@@ -693,12 +932,13 @@ export default function MonitoramentoIoT() {
                     </>
                   )}
                 </View>
+              ))}
+                </View>
               ))
             )}
           </View>
         )}
 
-        {/* Tab Teste */}
         {activeTab === "teste" && (
           <View>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -724,7 +964,7 @@ export default function MonitoramentoIoT() {
                 {t("iot.readingType")}
               </Text>
               <View style={styles.typeButtons}>
-                {(["estado", "temperatura", "gps", "moto"] as const).map((tipo) => (
+                {(["estado", "temperatura", "gps", "moto", "placa", "marca"] as const).map((tipo) => (
                   <TouchableOpacity
                     key={tipo}
                     style={[
@@ -846,7 +1086,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  motoHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   motoHeaderRight: {
     flexDirection: "row",
@@ -856,6 +1101,31 @@ const styles = StyleSheet.create({
   motoId: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  iotBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  iotText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  statusMonitoramento: {
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: "transparent",
+  },
+  statusMonitoramentoText: {
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
   },
   estadoBadge: {
     paddingHorizontal: 12,
@@ -905,13 +1175,19 @@ const styles = StyleSheet.create({
   },
   leituraCard: {
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: "transparent",
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  firstLeituraCard: {
+    borderTopWidth: 0,
+  },
+  lastLeituraCard: {
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    marginBottom: 0,
   },
   leituraHeader: {
     flexDirection: "row",
@@ -932,6 +1208,9 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 6,
   },
+  deleteButton: {
+    marginLeft: 4,
+  },
   leituraTipo: {
     fontSize: 14,
     fontWeight: "600",
@@ -939,6 +1218,43 @@ const styles = StyleSheet.create({
   leituraMoto: {
     fontSize: 12,
     marginLeft: "auto",
+  },
+  motoGroup: {
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  motoGroupHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 14,
+  },
+  motoGroupHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  motoGroupTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  motoGroupBadge: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  motoGroupCount: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#fff",
   },
   leituraValor: {
     fontSize: 16,
@@ -1012,6 +1328,27 @@ const styles = StyleSheet.create({
   },
   rotating: {
     transform: [{ rotate: "180deg" }],
+  },
+  legendaContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  legendaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  legendaDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  legendaText: {
+    fontSize: 12,
   },
   editInput: {
     padding: 12,

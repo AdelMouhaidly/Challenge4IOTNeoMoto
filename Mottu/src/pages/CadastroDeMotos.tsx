@@ -13,7 +13,7 @@ import {
 import { useTheme } from "../contexts/ThemeContext";
 import { useLocalization } from "../contexts/LocalizationContext";
 import { useNotification } from "../contexts/NotificationContext";
-import { getJavaApiUrl } from "../config/api";
+import { getJavaApiUrl, getPythonApiUrl } from "../config/api";
 
 export type MotoStatus = "parada" | "em uso" | "aguardando";
 
@@ -64,6 +64,17 @@ export default function CadastroDeMotos() {
     }
   };
 
+  const gerarGPSAleatorio = () => {
+    const latBase = -23.5505;
+    const lonBase = -46.6333;
+    const variacao = 0.01;
+    
+    const lat = latBase + (Math.random() - 0.5) * variacao;
+    const lon = lonBase + (Math.random() - 0.5) * variacao;
+    
+    return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+  };
+
   const cadastrarMoto = async () => {
     if (!nome || !marca || !configuracoes) {
       Alert.alert(t("bikes.errorTitle"), t("bikes.errorEmptyFields"));
@@ -92,6 +103,38 @@ export default function CadastroDeMotos() {
       if (response.ok) {
         const motoSalva = await response.json();
         setMotos((prev) => [...prev, motoSalva]);
+        
+        try {
+          const pythonApiUrl = getPythonApiUrl();
+          const motoId = `MOT-${motoSalva.id}`;
+          
+          await fetch(`${pythonApiUrl}/leituras`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              moto_id: motoId,
+              tipo: "estado",
+              valor: "parada",
+            }),
+          });
+          
+          await fetch(`${pythonApiUrl}/leituras`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              moto_id: motoId,
+              tipo: "gps",
+              valor: gerarGPSAleatorio(),
+            }),
+          });
+        } catch (iotError) {
+          console.error("Erro ao registrar no IoT:", iotError);
+        }
+        
         setNome("");
         setMarca("");
         setConfiguracoes("");

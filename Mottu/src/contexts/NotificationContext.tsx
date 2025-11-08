@@ -98,14 +98,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         content: {
           title,
           body,
-          sound: true,
+          sound: 'default',
           priority: Notifications.AndroidNotificationPriority.HIGH,
           badge: 1,
         },
         trigger: null,
       });
     } catch (error) {
-      return;
+      console.error('Erro ao enviar notificação:', error);
     }
   };
 
@@ -115,7 +115,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         content: {
           title,
           body,
-          sound: true,
+          sound: 'default',
           priority: Notifications.AndroidNotificationPriority.HIGH,
           badge: 1,
         },
@@ -124,7 +124,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         } as Notifications.TimeIntervalTriggerInput,
       });
     } catch (error) {
-      return;
+      console.error('Erro ao agendar notificação:', error);
     }
   };
 

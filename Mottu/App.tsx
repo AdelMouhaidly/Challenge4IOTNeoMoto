@@ -30,6 +30,7 @@ import {
   useLocalization,
 } from "./src/contexts/LocalizationContext";
 import { NotificationProvider } from "./src/contexts/NotificationContext";
+import { useAlertaMonitor } from "./src/hooks/useAlertaMonitor";
 
 const Stack = createNativeStackNavigator<StackLista>();
 const Drawer = createDrawerNavigator<DrawerLista>();
@@ -213,6 +214,8 @@ function NavegadorComMenuLateral() {
 }
 
 function AppContent() {
+  useAlertaMonitor();
+  
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>

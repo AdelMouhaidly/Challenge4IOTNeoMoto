@@ -10,7 +10,6 @@ import {
   Platform,
   ActivityIndicator,
   Linking,
-  TextInput,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme } from "../contexts/ThemeContext";
@@ -26,7 +25,7 @@ export default function DetectarMoto() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [motoId, setMotoId] = useState("MOT-01"); // ID padrão da moto
+  const [tentativa, setTentativa] = useState(0);
   const { colors } = useTheme();
   const { t } = useLocalization();
 
@@ -102,32 +101,34 @@ export default function DetectarMoto() {
     }
   };
 
-  const enviarImagem = async () => {
+  const enviarImagem = async (isRetry = false) => {
     if (!imageUri) {
       Alert.alert(t("detection.errorTitle"), t("detection.errorNoImage"));
       return;
     }
 
     setLoading(true);
-    setResultado(null);
+    if (!isRetry) {
+      setResultado(null);
+      setTentativa(0);
+    }
 
     const formData = new FormData();
     const uri = Platform.OS === "ios" ? imageUri.replace("file://", "") : imageUri;
     
     formData.append("file", {
       uri: uri,
-      name: "foto.jpg",
+      name: "moto.jpg",
       type: "image/jpeg",
     } as any);
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      const timeout = isRetry ? 60000 : 180000;
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const apiUrl = getApiUrl();
-      console.log("Enviando imagem para:", apiUrl);
-      console.log("URI da imagem:", imageUri);
-      console.log("URI processada:", uri);
+      console.log(`Enviando imagem (tentativa ${tentativa + 1}):`, apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -135,6 +136,7 @@ export default function DetectarMoto() {
         signal: controller.signal,
         headers: {
           Accept: "application/json",
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -149,25 +151,53 @@ export default function DetectarMoto() {
       const data = await response.json();
       console.log("Resposta da API:", data);
       setResultado(data);
+      setTentativa(0);
 
-      // A API já salva automaticamente no IoT, apenas logamos
       if (data.motos_detectadas && data.motos_detectadas.length > 0) {
-        console.log("Motos detectadas e registradas automaticamente no IoT!");
+        console.log("Motos detectadas e registradas automaticamente!");
+        Alert.alert(
+          "Sucesso!",
+          `${data.motos_detectadas.length} moto(s) detectada(s) e registrada(s) automaticamente no sistema!`,
+          [{ text: "OK" }]
+        );
       }
     } catch (error: any) {
       console.error("Erro ao enviar imagem:", error);
+      
+      if (!isRetry && tentativa < 1 && error.message?.includes("Network request failed")) {
+        console.log("Tentando novamente automaticamente...");
+        setTentativa(1);
+        setTimeout(() => enviarImagem(true), 1000);
+        return;
+      }
+      
       if (error.name === "AbortError" || error.message?.includes("Aborted")) {
         Alert.alert(
           t("detection.errorTitle"),
-          t("detection.errorTimeout") + " " + t("detection.coldStartMessage")
+          t("detection.errorTimeout") + "\n\n" + t("detection.coldStartMessage"),
+          [
+            { text: "Cancelar", style: "cancel" },
+            { text: "Tentar Novamente", onPress: () => enviarImagem(true) }
+          ]
         );
       } else if (error.message?.includes("Network request failed")) {
         Alert.alert(
           t("detection.errorTitle"),
-          t("detection.errorConnection")
+          t("detection.errorConnection") + "\n\nVerifique se o backend Python está rodando.",
+          [
+            { text: "Cancelar", style: "cancel" },
+            { text: "Tentar Novamente", onPress: () => enviarImagem(true) }
+          ]
         );
       } else {
-        Alert.alert(t("detection.errorTitle"), t("detection.errorDetection"));
+        Alert.alert(
+          t("detection.errorTitle"), 
+          t("detection.errorDetection"),
+          [
+            { text: "Cancelar", style: "cancel" },
+            { text: "Tentar Novamente", onPress: () => enviarImagem(true) }
+          ]
+        );
       }
     } finally {
       setLoading(false);
@@ -185,20 +215,13 @@ export default function DetectarMoto() {
         {t("detection.title")}
       </Text>
 
-      <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.label, { color: colors.text }]}>
-          ID da Moto (para Monitoramento IoT):
+      <View style={[styles.infoBox, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
+        <Text style={[styles.infoText, { color: colors.text }]}>
+          Os IDs das motos serão gerados automaticamente quando detectadas!
         </Text>
-        <TextInput
-          style={[
-            styles.input,
-            { backgroundColor: colors.background, color: colors.text },
-          ]}
-          placeholder="Ex: MOT-01"
-          placeholderTextColor={colors.textSecondary}
-          value={motoId}
-          onChangeText={setMotoId}
-        />
+        <Text style={[styles.infoSubtext, { color: colors.textSecondary }]}>
+          As motos detectadas serão registradas no sistema IoT com GPS, placa e marca.
+        </Text>
       </View>
 
       <TouchableOpacity
@@ -237,11 +260,16 @@ export default function DetectarMoto() {
                   : colors.success,
               },
             ]}
-            onPress={enviarImagem}
+            onPress={() => enviarImagem(false)}
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator color="#fff" />
+                <Text style={styles.loadingText}>
+                  {tentativa > 0 ? "Tentando novamente..." : "Detectando motos..."}
+                </Text>
+              </View>
             ) : (
               <Text style={styles.textoBotao}>{t("detection.detect")}</Text>
             )}
@@ -414,22 +442,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 4,
   },
-  inputContainer: {
+  infoBox: {
     width: "100%",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 2,
   },
-  label: {
+  infoText: {
     fontSize: 14,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  input: {
-    padding: 12,
-    borderRadius: 8,
+  infoSubtext: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  loadingText: {
+    color: "#fff",
     fontSize: 14,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
+    fontWeight: "600",
   },
 });
