@@ -7,7 +7,10 @@
     "android": "node scripts/update-commit-hash.js && expo start --android",
     "ios": "node scripts/update-commit-hash.js && expo start --ios",
     "web": "node scripts/update-commit-hash.js && expo start --web",
-    "update-hash": "node scripts/update-commit-hash.js"
+    "update-hash": "node scripts/update-commit-hash.js",
+    "build:android": "eas build --platform android --profile preview",
+    "build:android:local": "eas build --platform android --profile preview --local",
+    "build:ios": "eas build --platform ios --profile preview"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
