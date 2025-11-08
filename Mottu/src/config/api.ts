@@ -7,7 +7,7 @@ export const API_CONFIG = {
   PYTHON_API_LOCAL: "http://10.0.2.2:8000",
 };
 
-const USE_LOCAL_PYTHON_API = true;
+const USE_LOCAL_PYTHON_API = false;
 const MEU_IPV4 = "26.175.45.105";
 
 export const getJavaApiUrl = () => {
